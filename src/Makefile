@@ -34,4 +34,7 @@ $(TARGET): $(OBJS)
 	$(AS) $(ASFLAGS) -o $@ $<
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJS)
+
+dist-clean: clean
+	rm -f $(TARGET)
