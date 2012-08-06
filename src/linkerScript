@@ -1,0 +1,52 @@
+OUTPUT_FORMAT(elf64-x86-64)
+ENTRY(loader)
+SECTIONS
+{
+	. = 0x100000;
+
+        kernel_begin_addr = .;
+
+	.text ALIGN(4096) :
+	{
+                *multiboot.o(.text*)
+		*(.text*)
+		*(.gnu.linkonce.t*)
+	}
+
+	.rodata ALIGN(4096) :
+	{
+		*(.rodata*)
+		*(.gnu.linkonce.r*)
+	}
+
+	.data ALIGN(4096) :
+	{
+		start_ctors = .;
+		*(.ctor*)
+		end_ctors = .;
+
+		start_dtors = .;
+		*(.dtor*)
+		end_dtors = .;
+
+		*(.data*)
+		*(.gnu.linkonce.d*)
+	}
+
+        end_of_data = .;
+
+	.bss ALIGN(4096) :
+	{
+		*(.COMMON*)
+		*(.bss*)
+		*(.gnu.linkonce.b*)
+	}
+
+	 /DISCARD/ :
+	 {
+		*(.comment)
+		*(.eh_frame) /* You should discard this unless you're implementing runtime support for C++ exceptions. */
+	 }
+
+         end_of_kernel = .;
+}
