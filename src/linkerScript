@@ -8,7 +8,7 @@ SECTIONS
 
 	.text ALIGN(4096) :
 	{
-                *multiboot.o(.text*)
+		*multiboot.o(.text*)
 		*(.text*)
 		*(.gnu.linkonce.t*)
 	}

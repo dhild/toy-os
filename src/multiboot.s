@@ -8,6 +8,30 @@ global loader:function  	; making entry point visible to linker
 
 	bits 32
 
+	;; setting up the Multiboot header - see GRUB docs for details
+	MODULEALIGN equ  1<<0	; align loaded modules on page boundaries
+	MEMINFO     equ  1<<1	; provide memory map
+	VIDEOINFO   equ  1<<2	; video information provided
+	LOAD_KLUDGE equ  1<<16	; GRUB fails without these....
+	FLAGS       equ  MODULEALIGN | MEMINFO | LOAD_KLUDGE | VIDEOINFO ; this is the Multiboot 'flag' field
+	MAGIC       equ    0x1BADB002 ; 'magic number' lets bootloader find the header
+	CHECKSUM    equ 0 -(MAGIC + FLAGS) ; checksum required
+
+	align 4
+MultiBootHeader:
+	dd MAGIC
+	dd FLAGS
+	dd CHECKSUM
+	dd MultiBootHeader   ; header_addr (flags[16])
+	dd kernel_begin_addr ; load_addr (flags[16])
+	dd end_of_data       ; load_end_addr (flags[16])
+	dd end_of_kernel     ; bss_end_addr (flags[16])
+	dd loader            ; entry_addr (flags[16])
+	dd 1                 ; mode type (flags[2])
+	dd 0                 ; width (flags[2])
+	dd 0                 ; height (flags[2])
+	dd 0                 ; depth (flags[2])
+
 loader:
 	;; Keep interrupts disabled until we are set to handle them.
 	cli

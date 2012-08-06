@@ -1,5 +1,6 @@
 fd.img
 hd.img
 hd/
+bochs.log
 *.o
 *~
