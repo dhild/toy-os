@@ -4,122 +4,114 @@ global set_trap:function
 
 extern CodeSeg, DataSeg
 
-%define breakpoint 		; xchg bx,bx
+%define breakpoint  xchg bx,bx
 
 bits 64
 
 section .data
 
+	align 8
 table:
-    times (256 * 2) dq 0
-    .Pointer:        ; The IDT-pointer.
-    dw $ - table - 1 ; Limit.
-    dq table         ; Base.
+	times (256 * 2) dq 0
+.Pointer:			; The IDT-pointer.
+	dw $ - table - 1	; Limit.
+	dq table		; Base.
 
 section .text
 
-; Sets up the interrupt tables with the basic interrupts defined as in
-; interrupts.h. All other interrupts are blank.
-; void setup_interrupts();
+	;; Sets up the interrupt tables with the basic interrupts defined as in
+	;; interrupts.h. All other interrupts are blank.
+	;; void setup_interrupts();
 setup_interrupts:
-    breakpoint
-    cli
+	breakpoint
+	cli
 
-    mov rdi, table ; Set the tables to zero, as that indicates an absent
-    xor rax, rax   ; interrupt handler.
-    mov rcx, 512
-    rep stosd
+	;; Zero out the tables
+	mov rdi, table
+	xor rax, rax
+	mov rcx, 512
+	rep stosd
 
-    ; Install the base interrupt handlers
+	;; Install the base interrupt handlers
 
-    mov rdi, 0x00
-    mov rsi, interrupt_0
-    call set_interrupt
+	mov rdi, 0x00
+	mov rsi, interrupt_0
+	call set_interrupt
 
-    mov rdi, 0x01
-    mov rsi, interrupt_1
-    call set_interrupt
+	mov rdi, 0x01
+	mov rsi, interrupt_1
+	call set_interrupt
 
-    mov rdi, 0x02
-    mov rsi, interrupt_2
-    call set_interrupt
+	mov rdi, 0x02
+	mov rsi, interrupt_2
+	call set_interrupt
 
-    mov rdi, 0x03
-    mov rsi, interrupt_3
-    call set_interrupt
+	mov rdi, 0x03
+	mov rsi, interrupt_3
+	call set_interrupt
 
-    mov rdi, 0x04
-    mov rsi, interrupt_4
-    call set_interrupt
+	mov rdi, 0x04
+	mov rsi, interrupt_4
+	call set_interrupt
 
-    mov rdi, 0x05
-    mov rsi, interrupt_5
-    call set_interrupt
+	mov rdi, 0x05
+	mov rsi, interrupt_5
+	call set_interrupt
 
-    mov rdi, 0x06
-    mov rsi, interrupt_6
-    call set_interrupt
+	mov rdi, 0x06
+	mov rsi, interrupt_6
+	call set_interrupt
 
-    mov rdi, 0x07
-    mov rsi, interrupt_7
-    call set_interrupt
+	mov rdi, 0x07
+	mov rsi, interrupt_7
+	call set_interrupt
 
-    mov rdi, 0x08
-    mov rsi, interrupt_8
-    call set_interrupt
+	mov rdi, 0x08
+	mov rsi, interrupt_8
+	call set_interrupt
 
-    mov rdi, 0x0A
-    mov rsi, interrupt_10
-    call set_interrupt
+	mov rdi, 0x0A
+	mov rsi, interrupt_10
+	call set_interrupt
 
-    mov rdi, 0x0B
-    mov rsi, interrupt_11
-    call set_interrupt
+	mov rdi, 0x0B
+	mov rsi, interrupt_11
+	call set_interrupt
 
-    mov rdi, 0x0C
-    mov rsi, interrupt_12
-    call set_interrupt
+	mov rdi, 0x0C
+	mov rsi, interrupt_12
+	call set_interrupt
 
-    mov rdi, 0x0D
-    mov rsi, interrupt_13
-    call set_interrupt
+	mov rdi, 0x0D
+	mov rsi, interrupt_13
+	call set_interrupt
 
-    mov rdi, 0x0E
-    mov rsi, interrupt_14
-    call set_interrupt
+	mov rdi, 0x0E
+	mov rsi, interrupt_14
+	call set_interrupt
 
-    mov rdi, 0xA0
-    mov rsi, interrupt_16
-    call set_interrupt
+	mov rdi, 0xA0
+	mov rsi, interrupt_16
+	call set_interrupt
 
-    mov rdi, 0xA1
-    mov rsi, interrupt_17
-    call set_interrupt
+	mov rdi, 0xA1
+	mov rsi, interrupt_17
+	call set_interrupt
 
-    mov rdi, 0xA2
-    mov rsi, interrupt_18
-    call set_interrupt
+	mov rdi, 0xA2
+	mov rsi, interrupt_18
+	call set_interrupt
 
-    mov rdi, 0xA3
-    mov rsi, interrupt_19
-    call set_interrupt
+	mov rdi, 0xA3
+	mov rsi, interrupt_19
+	call set_interrupt
 
-    breakpoint
+	breakpoint
 
-    lidt [table.Pointer] ; Finally, enable the interrupts and return
-    sti
-
-    ret ; setup_interrupts
-
-;struct idt_entry {
-;    word offset1;
-;    word segment;
-;    byte ist;   0000_0xxx_b -> ?
-;    byte flags; 1000_xxxx_b -> ?
-;    word offset2;
-;    dword offset3;
-;    dword reserved;
-;}
+	;; Enable the interrupts and return
+	lidt [table.Pointer]
+	sti
+	ret
 
 ; void set_interrupt( byte number in rdi, void (*handler)() in rsi )
 set_interrupt:
@@ -138,35 +130,39 @@ set_trap:
 ;       rsi - handler pointer
 ;       rcx - type flag
 load_descriptor:
-    mov rax, rsi
-    shr rax, 16
-    shl rax, 1
-    or rax, 0x1 ; Set the Present flag
-    shl rax, 2
-    and rdx, 0x3 ; Set the DPL (max value of 3)
-    or rax, rdx
-    shl rax, 5
-    or rax, rcx ; Type of descriptor
-    shl rax, 8 ; If IST is implemented, the descriptor part goes here
-    shl rax, 16
-    mov cx, CodeSeg
-    or ax, cx ; Use the current cs segment selector - this only works in 64-bit mode!
-    shl rax, 16
-    or ax, si ; Load the lower part of the address
+	;; dword 0: (31:16) segment selector
+	;;          (15:00) offset 15:00
+	;; dword 1: (31:16) offset 31:16
+	;;          (15:08) P | DPL | 0 | Type
+	;;          (08:00) 00000 | IST
+	;; dword 2: (31:00) offset 63:32
+	;; dword 3: (31:00) Reserved (sign extended of offset)
 
-    and rdi, 0xFF ; convert rdi to address of descriptor
-    shl rdi, 4    ; Each entry is 16 bytes long
-    add rdi, table
+	;; Set rdi to point to the descriptor:
+	and rdi, 0xFF
+	shl rdi, 4
+	add rdi, table
 
-    mov qword [rdi], rax
+	;; rax first contains dwords 1 and 0:
+	mov rax, rsi
+	shr rax, 8
+	and rax, 0xFFFF00
+	or rax, 0x80
+	or rax, rcx
+	shl rax, 24
+	mov cx, CodeSeg
+	or ax, cx
+	shl rax, 16
+	or ax, si
+	mov qword [rdi], rax
 
-    mov rax, rsi
-    sar rax, 32 ; IDT descriptor qword #2 has the top dword reserved, sign extended
-    add rdi, 8
+	;; Now dwords 3 and 2:
+	mov rax, rsi
+	sar rax, 32
+	add rdi, 8
+	mov qword [rdi], rax
 
-    mov qword [rdi], rax
-
-    ret
+	ret
 
 extern divide_error_exception
 extern debug_exception
@@ -188,74 +184,91 @@ extern machine_check_exception
 extern simd_floating_point_exception
 
 interrupt_0:
-    call divide_error_exception
-    iretq
+	breakpoint
+	call divide_error_exception
+	iretq
 
 interrupt_1:
-    call debug_exception
-    iretq
+	breakpoint
+	call debug_exception
+	iretq
 
 interrupt_2:
-    call nmi_interrupt
-    iretq
+	breakpoint
+	call nmi_interrupt
+	iretq
 
 interrupt_3:
-    call breakpoint_exception
-    iretq
+	breakpoint
+	call breakpoint_exception
+	iretq
 
 interrupt_4:
-    call overflow_exception
-    iretq
+	breakpoint
+	call overflow_exception
+	iretq
 
 interrupt_5:
-    call bound_range_exceeded_exception
-    iretq
+	breakpoint
+	call bound_range_exceeded_exception
+	iretq
 
 interrupt_6:
-    call invalid_opcode_exception
-    iretq
+	breakpoint
+	call invalid_opcode_exception
+	iretq
 
 interrupt_7:
-    call device_not_available_exception
-    iretq
+	breakpoint
+	call device_not_available_exception
+	iretq
 
 interrupt_8:
-    call double_fault_exception
-    iretq
+	breakpoint
+	call double_fault_exception
+	iretq
 
 interrupt_10:
-    call invalid_tss_exception
-    iretq
+	breakpoint
+	call invalid_tss_exception
+	iretq
 
 interrupt_11:
-    call segment_not_present_exception
-    iretq
+	breakpoint
+	call segment_not_present_exception
+	iretq
 
 interrupt_12:
-    call stack_fault_exception
-    iretq
+	breakpoint
+	call stack_fault_exception
+	iretq
 
 interrupt_13:
-    call general_protection_exception
-    iretq
+	breakpoint
+	call general_protection_exception
+	iretq
 
 interrupt_14:
-    call page_fault_exception
-    iretq
+	breakpoint
+	call page_fault_exception
+	iretq
 
 interrupt_16:
-    call x87_fpu_floating_point_error
-    iretq
+	breakpoint
+	call x87_fpu_floating_point_error
+	iretq
 
 interrupt_17:
-    call alignment_check_exception
-    iretq
+	breakpoint
+	call alignment_check_exception
+	iretq
 
 interrupt_18:
-    call machine_check_exception
-    iretq
+	breakpoint
+	call machine_check_exception
+	iretq
 
 interrupt_19:
-    call simd_floating_point_exception
-    iretq
-
+	breakpoint
+	call simd_floating_point_exception
+	iretq
