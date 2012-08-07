@@ -4,7 +4,7 @@ global set_trap:function
 
 extern CodeSeg, DataSeg
 
-%define breakpoint xchg bx, bx
+%define breakpoint 		; xchg bx,bx
 
 bits 64
 
