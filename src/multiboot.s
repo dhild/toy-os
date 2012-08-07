@@ -40,13 +40,12 @@ loader:
 	cmp eax, 0x2BADB002
 	jne hang
 	
-	;; Set up the stack and store the boot info struct:
+	;; Set up the stack and store the boot info struct address:
 	mov esp, stack+STACKSIZE
-
-	mov esi, ebx
-	mov edi, boot_info
-	mov ecx, BOOT_INFO_SIZE
-	rep movsb
+	mov eax, ebx
+	xor ecx, ecx
+	push eax
+	push ecx
 
 	breakpoint
 
@@ -111,7 +110,7 @@ setup64:
 	mov cr0, eax
 
 	mov eax, cr4   	; 2. Enable PAE, 6th bit of cr4
-	or eax, 100000b
+	or eax, 0x20
 	mov cr4, eax
 
 	call make_paging 	; 3a. Prepare paging
@@ -264,11 +263,3 @@ stack:
 	   resb STACKSIZE	; reserve 16k stack on a doubleword boundary
 
 endstack:
-
-	;; Reserve the length of the info struct
-	BOOT_INFO_SIZE equ 90
-
-	align 4
-	
-boot_info:
-	resb BOOT_INFO_SIZE

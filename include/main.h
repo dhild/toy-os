@@ -11,7 +11,7 @@
 #include "multiboot.h"
 #include "types.h"
 
-extern "C" void boot(struct mb_header *header, qword magic);
+extern "C" void boot(struct mb_header *header );
 
 extern "C" void kmain();
 

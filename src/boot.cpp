@@ -13,20 +13,15 @@
 //#include "gdb.h"
 
 /** Main entry function, called as soon as 64-bit mode is enabled.
- * 
  */
-void boot( struct mb_header *header, qword magic ) {
+void boot( struct mb_header *header ) {
     
     // Enable debugging with gdb:
     //set_debug_traps();
     //breakpoint();
     // Before these can be enabled, need to find a 64-bit debugger....
 
-    dword flags = 0;
-
-    if ( magic == 0x2BADB002 ) {
-        flags = header->flags;
-    }
+  dword flags = header->flags;
 
     // Enable kernel printing....
     if ( flags & MB_FLAGS_GRAPHICS_TABLE ) {
