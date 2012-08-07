@@ -12,6 +12,7 @@ ASFLAGS=-f elf64 -g
 LDFLAGS=-melf_x86_64 -nostdlib -nodefaultlibs -z max-page-size=0x1000
 
 OBJS= 	multiboot.o \
+	paging.o \
 	string.o \
 	boot.o \
 	kmain.o \

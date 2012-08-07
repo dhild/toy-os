@@ -1,6 +1,7 @@
 global loader:function  	; making entry point visible to linker
 	extern kernel_begin_addr, end_of_data, end_of_kernel
-
+	extern make_page_tables
+	
 	;; Breakpoint definition for gdb remote
 	%define breakpoint 	; xchg bx,bx
 
@@ -32,6 +33,11 @@ MultiBootHeader:
 	dd 0                 ; height (flags[2])
 	dd 0                 ; depth (flags[2])
 
+hang:
+	;; Halts the machine
+	hlt
+	jmp hang
+
 loader:
 	;; Keep interrupts disabled until we are set to handle them.
 	cli
@@ -47,64 +53,7 @@ loader:
 	push eax
 	push ecx
 
-	breakpoint
-
- 	;; Note: this cannot be a call, as we would push a 32-bit pointer.
-	;;  If we tried to return, it should crash as we'll be in 64-bit
-	;;  mode, expecting a 64-bit pointer.....
-	jmp setup64
-
-hang:
-	;; Halts the machine
-	hlt
-	jmp hang
-
-
-	;;
-	;; debug:
-	;;    mov word [esi], 0x2a30
-	;;    add esi, 2
-	;;    ret
-
-	;; All Intel processors since Pentium Pro (with exception of the Pentium M at 400 Mhz)
-	;;  and all AMD since the Athlon series implement the Physical Address Extension (PAE).
-	;;  This feature allows you to access up to 64 GB (2^36) of RAM. You can check for this
-	;;  feature using CPUID. Once checked, you can activate this feature by setting bit 5
-	;;  in CR4. Once active, the CR3 register points to a table of 4 64bit entries, each one
-	;;  pointing to a page directory made of 4096 bytes (like in normal paging), divided
-	;;  into 512 64bit entries, each pointing to a 4096 byte page table, divided into 512
-	;;  64bit page entries.
-
-make_paging:
-	;;  Set up basic paging.
-	;;  This is a basic page table that is only used until the 64-bit version
-	;;  called from the C++ code can be loaded....
-	mov edi, 0x1000    	; Set the destination index to 0x1000.
-	mov cr3, edi       	; Set control register 3 to the destination index.
-	xor eax, eax       	; Nullify the A-register.
-	mov ecx, 4096      	; Set the C-register to 4096.
-	rep stosd          	; Clear the memory.
-	mov edi, cr3       	; Set the destination index to control register 3.
-
-	mov DWORD [edi], 0x2003 ; Set the double word at the destination index to 0x2003.
-	add edi, 0x1000	    ; Add 0x1000 to the destination index.
-	mov DWORD [edi], 0x3003 ; Set the double word at the destination index to 0x3003.
-	add edi, 0x1000	    ; Add 0x1000 to the destination index.
-	mov DWORD [edi], 0x4003 ; Set the double word at the destination index to 0x4003.
-	add edi, 0x1000	    ; Add 0x1000 to the destination index.
-
-	mov ebx, 0x00000003	; Set the B-register to 0x00000003.
-	mov ecx, 512	; Set the C-register to 512.
-
-.SetEntry:
-	mov DWORD [edi], ebx ; Set the double word at the destination index to the B-register.
-	add ebx, 0x1000	 ; Add 0x1000 to the B-register.
-	add edi, 8		 ; Add eight to the destination index.
-	loop .SetEntry	 ; Set the next entry.
-
-	ret
-
-setup64:
+	;; Set up for 64-bit mode
 	mov eax, cr0 	; 1. Disable paging, 32nd bit of cr0
 	and eax, 0x7FFFFFFF
 	mov cr0, eax
@@ -113,7 +62,7 @@ setup64:
 	or eax, 0x20
 	mov cr4, eax
 
-	call make_paging 	; 3a. Prepare paging
+	call make_page_tables 	; 3a. Prepare page tables
 
 	mov eax, 0x1000 	; 3. Load cr3 with the physical address of the page table
 	mov cr3, eax
@@ -149,17 +98,7 @@ Realm64:
 	mov ecx, 500		; Set the C-register to 500.
 	rep movsq			; Clear the screen.
 
-	breakpoint
-
-	;;     ltr TSSSeg
-
 	call boot 		; Call the kernel proper
-
-
-	
-	align 32
-pdpt:
-	times 4 dq 0
 
 	extern end_of_kernel
 	
