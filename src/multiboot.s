@@ -166,88 +166,68 @@ pdpt:
 	global NullSeg, CodeSeg, DataSeg, DPL1CodeSeg, DPL1DataSeg
 
 GDT64:				; Global Descriptor Table (64-bit).
-NullSeg:	 equ $ - GDT64	; The null descriptor.
-	    dq 0		;
-CodeSeg:	 equ $ - GDT64	; The code descriptor.
-	    dw 0		; Limit (low)
-	    dw 0		; Base (low)
-	    db 0		; Base (middle)
-	    db 10011000b	; P | DPL | S | Type (Code, Execute-Only)
-	    db 00100000b	; G | D/B | L | Avl | Limit (high)
-	    db 0		; Base (high)
-DataSeg:	 equ $ - GDT64	; The data descriptor.
-	    dw 0		; Limit (low)
-	    dw 0		; Base (low)
-	    db 0		; Base (middle)
-	    db 10010010b	; P | DPL | S | Type (Data, Read/Write)
-	    db 00100000b	; G | D/B | L | Avl | Limit (high)
-	    db 0		; Base (high)
-DPL1CodeSeg:	 equ $ - GDT64  ; The dpl 1 code descriptor.
-	    dw 0		; Limit (low)
-	    dw 0		; Base (low)
-	    db 0		; Base (middle)
-	    db 10111000b	; P | DPL | S | Type (Code, Execute-Only)
-	    db 00100000b	; G | D/B | L | Avl | Limit (high)
-	    db 0		; Base (high)
-DPL1DataSeg:	 equ $ - GDT64  ; The dpl 1 data descriptor.
-	    dw 0		; Limit (low)
-	    dw 0		; Base (low)
-	    db 0		; Base (middle)
-	    db 10110010b	; P | DPL | S | Type (Data, Read/Write)
-	    db 00100000b	; G | D/B | L | Avl | Limit (high)
-	    db 0		; Base (high)
-DPL2CodeSeg:	 equ $ - GDT64  ; The dpl 2 code descriptor.
-	    dw 0		; Limit (low)
-	    dw 0		; Base (low)
-	    db 0		; Base (middle)
-	    db 11011000b	; P | DPL | S | Type (Code, Execute-Only)
-	    db 00100000b	; G | D/B | L | Avl | Limit (high)
-	    db 0		; Base (high)
-DPL2DataSeg:	 equ $ - GDT64  ; The dpl 2 data descriptor.
-	    dw 0		; Limit (low)
-	    dw 0		; Base (low)
-	    db 0		; Base (middle)
-	    db 11010010b	; P | DPL | S | Type (Data, Read/Write)
-	    db 00100000b	; G | D/B | L | Avl | Limit (high)
-	    db 0		; Base (high)
-DPL3CodeSeg:	 equ $ - GDT64  ; The dpl 3 code descriptor.
-	    dw 0		; Limit (low)
-	    dw 0		; Base (low)
-	    db 0		; Base (middle)
-	    db 11111000b	; P | DPL | S | Type (Code, Execute-Only)
-	    db 00100000b	; G | D/B | L | Avl | Limit (high)
-	    db 0		; Base (high)
-DPL3DataSeg:	 equ $ - GDT64  ; The dpl 3 data descriptor.
-	    dw 0		; Limit (low)
-	    dw 0		; Base (low)
-	    db 0		; Base (middle)
-	    db 11110010b	; P | DPL | S | Type (Data, Read/Write)
-	    db 00100000b	; G | D/B | L | Avl | Limit (high)
-	    db 0		; Base (high)
-	;;     TSSSeg: equ $ - GDT64       ; Used for the TSS
-	;;     dw (TSS.end - TSS) & 0xFFFF ; Limit
-	;;     dw (TSS & 0xFFFF)
-	;;     db ((TSS >> 16) & 0xFF)
-	;;     db 0x89
-	;;     db (((TSS.end - TSS) >> 16) & 0xF) | 0x80
-	;;     dq ((TSS >> 24) & 0xFFFFFFFFFF)
-	;;     db 0
-	;;     dw 0
-	    .Pointer:		; The GDT-pointer.
-	    dw $ - GDT64 - 1	; Limit.
-	    dq GDT64		; Base.
-
-TSS:
-	    dd 0 		; Reserved
-	    dq (endstack - 0x100)
-	    dq 0
-	    dq 0
-	    dq 0 		; Reserved
-	    times 7 dq 0
-	    dq 0 		; Reserved
-	    dw 0 		; Reserved
-	    dw (IOMap - TSS)
-	.end:
+NullSeg: equ $ - GDT64	; The null descriptor.
+	dq 0		;
+CodeSeg: equ $ - GDT64	; The kernel code descriptor.
+	dw 0xFFFF	; Limit (low)
+	dw 0		; Base (low)
+	db 0		; Base (middle)
+	db 10011000B	; P | DPL | S | Type [Code | Conform | Read | Dirty]
+	db 10101111B	; G | D/B | L | Avl | Limit (high)
+	db 0		; Base (high)
+DataSeg: equ $ - GDT64	; The kernel data descriptor.
+	dw 0xFFFF	; Limit (low)
+	dw 0		; Base (low)
+	db 0		; Base (middle)
+	db 10010010B	; P | DPL | S | Type [Data | Exp-Dwn | Write | Dirty]
+	db 10101111B	; G | D/B | L | Avl | Limit (high)
+	db 0		; Base (high)
+DPL1CodeSeg: equ $ - GDT64  ; The dpl 1 code descriptor.
+	dw 0xFFFF	; Limit (low)
+	dw 0		; Base (low)
+	db 0		; Base (middle)
+	db 10111000B	; P | DPL | S | Type (Code, Execute-Only)
+	db 10101111B	; G | D/B | L | Avl | Limit (high)
+	db 0		; Base (high)
+DPL1DataSeg: equ $ - GDT64  ; The dpl 1 data descriptor.
+	dw 0xFFFF	; Limit (low)
+	dw 0		; Base (low)
+	db 0		; Base (middle)
+	db 10110010B	; P | DPL | S | Type (Data, Read/Write)
+	db 10101111B	; G | D/B | L | Avl | Limit (high)
+	db 0		; Base (high)
+DPL2CodeSeg: equ $ - GDT64  ; The dpl 2 code descriptor.
+	dw 0xFFFF	; Limit (low)
+	dw 0		; Base (low)
+	db 0		; Base (middle)
+	db 11011000B	; P | DPL | S | Type (Code, Execute-Only)
+	db 10101111B	; G | D/B | L | Avl | Limit (high)
+	db 0		; Base (high)
+DPL2DataSeg: equ $ - GDT64  ; The dpl 2 data descriptor.
+	dw 0xFFFF	; Limit (low)
+	dw 0		; Base (low)
+	db 0		; Base (middle)
+	db 11010010B	; P | DPL | S | Type (Data, Read/Write)
+	db 10101111B	; G | D/B | L | Avl | Limit (high)
+	db 0		; Base (high)
+DPL3CodeSeg: equ $ - GDT64  ; The dpl 3 code descriptor.
+	dw 0xFFFF	; Limit (low)
+	dw 0		; Base (low)
+	db 0		; Base (middle)
+	db 11111000B	; P | DPL | S | Type (Code, Execute-Only)
+	db 10101111B	; G | D/B | L | Avl | Limit (high)
+	db 0		; Base (high)
+DPL3DataSeg: equ $ - GDT64  ; The dpl 3 data descriptor.
+	dw 0xFFFF	; Limit (low)
+	dw 0		; Base (low)
+	db 0		; Base (middle)
+	db 11110010B	; P | DPL | S | Type (Data, Read/Write)
+	db 10101111B	; G | D/B | L | Avl | Limit (high)
+	db 0		; Base (high)
+	
+.Pointer:			; The GDT-pointer.
+	dw $ - GDT64 - 1	; Limit.
+	dq GDT64		; Base.
 
 IOMap:
 	    times 32 db 0

@@ -19,10 +19,7 @@ void setup_printing( dword vbe_control_info,
                      dword vbe_mode,
                      dword vbe_interface_seg,
                      dword vbe_interface_off,
-                     dword vbe_interface_len ) {
-
-  asm ( "xchg %bx,%bx" );
-    
+                     dword vbe_interface_len ) {    
   if ( setup == true )
     return;
 
@@ -135,7 +132,7 @@ void print_hex( qword value ) {
     }
     default: {
       hex_string[2+i] = '0';
-      hex_string[2+i] += (unsigned char)c;
+      hex_string[2+i] += (char)c;
       break;
     }
     } // switch(c)

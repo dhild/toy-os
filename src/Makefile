@@ -6,9 +6,9 @@ WARNINGS=-Wall -Wextra -Werror
 STANDALONE=-nostdlib -fno-builtin -nostartfiles -nodefaultlibs
 CFLAGS=-m64 $(WARNINGS) $(STANDALONE) \
 	-fno-exceptions -fno-stack-protector -mno-red-zone \
-	-I../include
+	-I../include -g
 CXXFLAGS=$(CFLAGS) -fno-rtti
-ASFLAGS=-f elf64
+ASFLAGS=-f elf64 -g
 LDFLAGS=-melf_x86_64 -nostdlib -nodefaultlibs -z max-page-size=0x1000
 
 OBJS= 	multiboot.o \
@@ -24,7 +24,7 @@ TARGET=kernel.elf
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(LINK) $(LDFLAGS) -T linkerScript -o $(TARGET) $(OBJS)
+	$(LINK) $(LDFLAGS) -T linkerScript -Map kernel.link -o $(TARGET) $(OBJS)
 
 %.o: %.cpp
 	$(CXX) -c -o $@ $< $(CFLAGS)
@@ -36,4 +36,4 @@ clean:
 	rm -f $(OBJS)
 
 dist-clean: clean
-	rm -f $(TARGET)
+	rm -f $(TARGET) kernel.link
