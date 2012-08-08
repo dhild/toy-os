@@ -3,7 +3,7 @@ global make_page_tables:function
 	section .text
 	bits 32
 	
-	;; All Intel processors since Pentium Pro (with exception of the Pentium M at 400 Mhz)
+	;;  All Intel processors since Pentium Pro (with exception of the Pentium M at 400 Mhz)
 	;;  and all AMD since the Athlon series implement the Physical Address Extension (PAE).
 	;;  This feature allows you to access up to 64 GB (2^36) of RAM. You can check for this
 	;;  feature using CPUID. Once checked, you can activate this feature by setting bit 5
@@ -12,10 +12,26 @@ global make_page_tables:function
 	;;  into 512 64bit entries, each pointing to a 4096 byte page table, divided into 512
 	;;  64bit page entries.
 
+extern mb_info.flags, mb_info.mem_upper
 make_page_tables:
 	;;  Set up basic paging.
 
+	;; Check for a memory size from multiboot.
+	;; Once found, put it in ecx.
+	mov eax, [mb_info.flags]
+	and eax, 0x1
+	cmp eax, 0x1
+	jne .mmap_parse
 
+	;; multiboot has a 'limit' address, which is what we need, minus 1MB
+	mov ecx, [mb_info.mem_upper]
+	add ecx, 0x100000
+	jmp .have_mem_count
+
+.mmap_parse:
+
+.have_mem_count:
+	
 
 	
 	;;  This is a basic page table that is only used until the 64-bit version

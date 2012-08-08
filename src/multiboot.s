@@ -45,10 +45,16 @@ loader:
 	;; Ensure that this is a multiboot load:
 	cmp eax, 0x2BADB002
 	jne hang
+
+	;; Store the boot info structure
+	mov ecx, (mb_info.end - mb_info.end)
+	mov esi, ebx
+	lea edi, [mb_info]
+	rep movsb
 	
 	;; Set up the stack and store the boot info struct address:
 	mov esp, stack+STACKSIZE
-	mov eax, ebx
+	lea eax, [mb_info]
 	xor ecx, ecx
 	push eax
 	push ecx
@@ -172,7 +178,53 @@ IOMap:
 	    times 32 db 0
 	    db 0xFF
 
-	;;  reserve initial kernel stack space
+global mb_info, mb_info.flags, mb_info.mem_upper
+mb_info:
+.flags:
+	dd 0
+.mem_lower:
+	dd 0
+.mem_upper:
+	dd 0
+.boot_device:
+	dd 0
+.cmdline:
+	dd 0
+.mods_count:
+	dd 0
+.mods_addr:
+	dd 0
+.syms:
+	times 4 dd 0
+.mmap_length:
+	dd 0
+.mmap_addr:
+	dd 0
+.drives_length:
+	dd 0
+.drives_addr:
+	dd 0
+.config_table:
+	dd 0
+.boot_loader_name:
+	dd 0
+.apm_table:
+	dd 0
+.vbe_control_info:
+	dd 0
+.vbe_mode_info:
+	dd 0
+.vbe_mode:
+	dw 0
+.vbe_interface_seg:
+	dw 0
+.vbe_interface_off:
+	dw 0
+.vbe_interface_len:
+	dw 0
+.end:
+	
+	;; reserve initial kernel stack space
 	STACKSIZE equ 0x4000	; that's 16kb.
 
 	section .bss
