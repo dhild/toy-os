@@ -1,6 +1,8 @@
-CXX=g++
+BINDIR=/home/dhild/cross/bin
+CC=$(BINDIR)/x86_64-elf-gcc
+CXX=$(BINDIR)/x86_64-elf-g++
 AS=nasm
-LINK=ld
+LINK=$(BINDIR)/x86_64-elf-ld
 
 WARNINGS=-Wall -Wextra -Werror
 STANDALONE=-nostdlib -fno-builtin -nostartfiles -nodefaultlibs
@@ -28,7 +30,10 @@ $(TARGET): $(OBJS)
 	$(LINK) $(LDFLAGS) -T linkerScript -Map kernel.link -o $(TARGET) $(OBJS)
 
 %.o: %.cpp
-	$(CXX) -c -o $@ $< $(CFLAGS)
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 %.o: %.s
 	$(AS) $(ASFLAGS) -o $@ $<
