@@ -16,6 +16,32 @@ extern mb_info.flags, mb_info.mem_upper
 make_page_tables:
 	;;  Set up basic paging.
 
+	;; First, we need to know how much memory is available. The BIOS interrupts should
+	;; be active still, so let's try them first:
+	xor cx, cx
+	xor dx, dx
+	mov ax, 0xE801
+	int 0x15		; Requests the size of upper memory
+	jc .bios2
+	cmp ah, 0x86		; Operation unsupported
+	je .bios2
+	cmp ah, 0x80		; Invalid command
+	je .bios2
+	jcxz .useax		; Is cx/dx valid?
+
+	mov ax, cx
+	mov bx, dx
+.useax:
+	;; ax = number of contiguous Kb, 1M to 16M
+	;; bx = contiguous 64Kb pages above 16M
+	mov ebx, 0x1000000	; Starting address for valid memory
+	cmp ax, 0x3C00		; If there is the full 15M available, use it
+	jne .only_upper
+	mov ebx, 0x100000
+	
+
+.bios2:
+
 	;; Check for a memory size from multiboot.
 	;; Once found, put it in ecx.
 	mov eax, [mb_info.flags]
