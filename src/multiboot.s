@@ -223,14 +223,11 @@ mb_info:
 .vbe_interface_len:
 	dw 0
 .end:
-	
-	;; reserve initial kernel stack space
-	STACKSIZE equ 0x4000	; that's 16kb.
 
 	section .bss
+	;; reserve initial kernel stack space
+	STACKSIZE equ 0x10000	; that's 64kb.
 	align 4
-
 stack:
-	   resb STACKSIZE	; reserve 16k stack on a doubleword boundary
-
+	   resb STACKSIZE	; reserve stack on a doubleword boundary
 endstack:

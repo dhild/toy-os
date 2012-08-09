@@ -1,7 +1,7 @@
 global make_page_tables:function
 
-	section .text
-	bits 32
+section .text
+bits 32
 	
 	;;  All Intel processors since Pentium Pro (with exception of the Pentium M at 400 Mhz)
 	;;  and all AMD since the Athlon series implement the Physical Address Extension (PAE).
@@ -29,6 +29,8 @@ make_page_tables:
 	jmp .have_mem_count
 
 .mmap_parse:
+
+	;; 
 
 .have_mem_count:
 	
@@ -60,3 +62,19 @@ make_page_tables:
 	loop .SetEntry	 ; Set the next entry.
 
 	ret
+
+section .bss
+
+	;; Each of these tables must be 4096 bytes long
+	align 4096
+PML4Tables:
+	resq 512		; 1 entry per 512Gb
+
+PDPTables:	
+	resq 512		; 1 entry per 1Gb
+
+PDTables:
+	resq 2048		; 1 entry per 2Mb
+
+PTables:
+	resq 0x100000		; 1 entry per 4Kb
