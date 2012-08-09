@@ -48,7 +48,7 @@ loader:
 	jne hang
 
 	;; Store the boot info structure
-	mov ecx, (mb_info.end - mb_info.end)
+	mov ecx, (mb_info.end - mb_info)
 	mov esi, ebx
 	lea edi, [mb_info]
 	rep movsb
