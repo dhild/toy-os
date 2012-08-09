@@ -1,6 +1,6 @@
 global loader:function  	; making entry point visible to linker
-	extern kernel_begin_addr, end_of_data, end_of_kernel
-	extern make_page_tables
+extern kernel_begin_addr, end_of_data, end_of_kernel
+extern make_page_tables, PML4Tables
 	
 	;; Breakpoint definition for gdb remote
 	%define breakpoint 	; xchg bx,bx
@@ -61,25 +61,25 @@ loader:
 	push ecx
 
 	;; Set up for 64-bit mode
-	mov eax, cr0 	; 1. Disable paging, 32nd bit of cr0
+	mov eax, cr0		; 1. Disable paging, bit 31 of cr0
 	and eax, 0x7FFFFFFF
 	mov cr0, eax
 
-	mov eax, cr4   	; 2. Enable PAE, 6th bit of cr4
+	mov eax, cr4		; 2. Enable PAE, 6th bit of cr4
 	or eax, 0x20
 	mov cr4, eax
 
-	call make_page_tables 	; 3a. Prepare page tables
+	call make_page_tables	; 3a. Prepare page tables
 
-	mov eax, 0x1000 	; 3. Load cr3 with the physical address of the page table
+	mov eax, PML4Tables	; 3. Load cr3 with the physical address of the page table
 	mov cr3, eax
 
-	mov ecx, 0xC0000080 ; 4. Enable IA-32e mode by setting IA32_EFER.LME = 1.
+	mov ecx, 0xC0000080	; 4. Enable IA-32e mode by setting IA32_EFER.LME = 1.
 	rdmsr
 	or eax, 0x00000100
 	wrmsr
 
-	mov eax, cr0 	; 5. Enable paging, 31st bit of cr0
+	mov eax, cr0		; 5. Enable paging, bit 31 of cr0
 	or eax, 0x80000000
 	mov cr0, eax
 
@@ -107,9 +107,7 @@ Realm64:
 
 	call boot 		; Call the kernel proper
 
-	extern end_of_kernel
-	
-	global NullSeg, CodeSeg, DataSeg, DPL1CodeSeg, DPL1DataSeg
+global NullSeg, CodeSeg, DataSeg, DPL1CodeSeg, DPL1DataSeg
 
 GDT64:				; Global Descriptor Table (64-bit).
 NullSeg: equ $ - GDT64	; The null descriptor.
@@ -225,7 +223,7 @@ mb_info:
 	dw 0
 .end:
 
-	section .bss
+section .bss
 	;; reserve initial kernel stack space
 	STACKSIZE equ 0x10000	; that's 64kb.
 	align 4

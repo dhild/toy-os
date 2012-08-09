@@ -1,5 +1,6 @@
 global make_page_tables:function
-
+global PML4Tables
+	
 section .bss
 	;; We can handle up to 4Gb. Translate that:
 	MAXMEMSIZE equ 0x100000000
