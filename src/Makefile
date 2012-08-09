@@ -15,12 +15,12 @@ LDFLAGS=-melf_x86_64 -nostdlib -nodefaultlibs -z max-page-size=0x1000
 
 OBJS= 	multiboot.o \
 	paging.o \
-	string.o \
+	printing.o \
 	boot.o \
-	kmain.o \
 	kprintf.o \
 	idt.o \
-	interrupts.o
+	interrupts.o \
+	kmain.o
 
 TARGET=kernel.elf
 
