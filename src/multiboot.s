@@ -35,6 +35,7 @@ MultiBootHeader:
 
 hang:
 	;; Halts the machine
+	xchg bx, bx
 	hlt
 	jmp hang
 
