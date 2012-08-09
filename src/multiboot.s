@@ -2,12 +2,8 @@ global loader:function  	; making entry point visible to linker
 extern kernel_begin_addr, end_of_data, end_of_kernel
 extern make_page_tables, PML4Tables
 	
-	;; Breakpoint definition for gdb remote
-	%define breakpoint 	; xchg bx,bx
-
-	section .text
-
-	bits 32
+section .text
+bits 32
 
 	;; setting up the Multiboot header - see GRUB docs for details
 	MODULEALIGN equ  1<<0	; align loaded modules on page boundaries
@@ -100,12 +96,10 @@ Realm64:
 	mov es, ax		; Set the extra segment to the A-register.
 	mov fs, ax		; Set the F-segment to the A-register.
 	mov gs, ax		; Set the G-segment to the A-register.
-	mov edi, 0xB8000	; Set the destination index to 0xB8000.
-	mov rax, 0x1F201F201F201F20	; Set the A-register to 0x1F201F201F201F20.
-	mov ecx, 500		; Set the C-register to 500.
-	rep movsq			; Clear the screen.
-
+	
+	xchg bx, bx
 	call boot 		; Call the kernel proper
+	jmp hang		; Hang if we ever return
 
 global NullSeg, CodeSeg, DataSeg, DPL1CodeSeg, DPL1DataSeg
 
