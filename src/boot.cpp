@@ -35,11 +35,6 @@ void boot( struct mb_header *header ) {
     setup_printing( 0, 0, 0, 0, 0, 0 );
   }
 
-  // This needs to be done as soon as possible after booting.
-  // The interrupts themselves will call printing methods, however,
-  // so this will need to wait until after setup_printing()....
-  setup_interrupts();
-
   kbreak();
   print_string( "Printing enabled!\n" );
   kbreak();
@@ -51,6 +46,11 @@ void boot( struct mb_header *header ) {
   kbreak();
   print_string( "\n" );
   kbreak();
+
+  // This needs to be done as soon as possible after booting.
+  // The interrupts themselves will call printing methods, however,
+  // so this will need to wait until after setup_printing()....
+  setup_interrupts();
 
   if ( flags & MB_FLAGS_MEM_INFO ) {
 //        unsigned int mem_lower;     // flags[0]
