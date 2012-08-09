@@ -21,6 +21,7 @@ PDTables:
 
 PTables:
 	resq MAX4KBPAGES	; 1 entry per 4Kb
+.end:
 	
 section .text
 bits 32
@@ -44,17 +45,21 @@ extern mb_info.flags, mb_info.mem_upper
 make_page_tables:
 	;;  Set up basic paging.
 
+	;; Unfortunately, BIOS calls only run in 16-bit mode =(
+	jmp .multiboot
 	;; First, we need to know how much memory is available. The BIOS interrupts should
 	;; be active still, so let's try them first:
 	xor cx, cx
 	xor dx, dx
 	mov ax, 0xE801
+	sti
 	int 0x15		; Requests the size of upper memory
 	jc .bios2
 	cmp ah, 0x86		; Operation unsupported
 	je .bios2
 	cmp ah, 0x80		; Invalid command
 	je .bios2
+	cli
 	jcxz .useax		; Is cx/dx valid?
 
 	mov ax, cx
@@ -88,6 +93,7 @@ make_page_tables:
 	mov ax, 0xE881
 	int 0x15		; Requests the size of upper memory
 	jc .multiboot
+	cli
 	cmp ah, 0x86		; Operation unsupported
 	je .multiboot
 	cmp ah, 0x80		; Invalid command
@@ -105,10 +111,10 @@ make_page_tables:
 	cmp eax, 0x1
 	jne .multiboot_mmap
 
-	;; multiboot has a 'limit' address, which is what we need, minus 1MB
+	;; multiboot has a 'limit' address, in Kb, which is what we need, minus 1MB
 	mov ecx, [mb_info.mem_upper]
-	add ecx, 0x100000
-	shr ecx, 12
+	add ecx, 0x400
+	shr ecx, 2
 	push ecx
 	jmp SetupPML4Table
 
@@ -140,11 +146,12 @@ SetupPML4Table:
 	add edi, 8
 
 	mov ecx, 509		; # of remaining entries
-	shl ecx, 2
+	shl ecx, 1
 	xor eax, eax
 	rep stosd
 
 SetupPDPT:
+	;; Each maps 1Gb
 	;; We have three present entry groups:
 	;; 0 - 4 privileged, r/w entries
 	;; 1 - 4 user, r/w entries
@@ -231,7 +238,7 @@ SetupPT:
 	dec ecx
 	jnz .loop
 
-	mov ecx, PTables
+	mov ecx, PTables.end
 	sub ecx, edi
 	shr ecx, 2
 	xor eax, eax
