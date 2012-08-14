@@ -35,7 +35,7 @@ $(TARGET): $(OBJS)
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-%.o: %.s
+%.o: %.asm
 	$(AS) $(ASFLAGS) -o $@ $<
 
 clean:
