@@ -8,7 +8,7 @@ WARNINGS=-Wall -Wextra -Werror
 STANDALONE=-nostdlib -fno-builtin -nostartfiles -nodefaultlibs
 CFLAGS=-m64 $(WARNINGS) $(STANDALONE) \
 	-fno-exceptions -fno-stack-protector -mno-red-zone \
-	-I../include -g
+	-I. -g
 CXXFLAGS=$(CFLAGS) -fno-rtti
 ASFLAGS=-f elf64 -g
 LDFLAGS=-melf_x86_64 -nostdlib -nodefaultlibs -z max-page-size=0x1000

@@ -1,5 +1,4 @@
 #include "kprintf.h"
-#include "string.h"
 #include "kdebug.h"
 
 void print_dec( qword value ) {
