@@ -1,45 +1,37 @@
-BINDIR=/home/dhild/cross/bin
-CC=$(BINDIR)/x86_64-elf-gcc
-CXX=$(BINDIR)/x86_64-elf-g++
-AS=nasm
-LINK=$(BINDIR)/x86_64-elf-ld
+include $(BASEMAKE)
 
-WARNINGS=-Wall -Wextra -Werror
-STANDALONE=-nostdlib -fno-builtin -nostartfiles -nodefaultlibs
-CFLAGS=-m64 $(WARNINGS) $(STANDALONE) \
-	-fno-exceptions -fno-stack-protector -mno-red-zone \
-	-I. -g
-CXXFLAGS=$(CFLAGS) -fno-rtti
-ASFLAGS=-f elf64 -g
-LDFLAGS=-melf_x86_64 -nostdlib -nodefaultlibs -z max-page-size=0x1000
-
-OBJS= 	multiboot.o \
+OBJS = \
+ 	multiboot.o \
 	paging.o \
+	idt.o \
 	printing.o \
 	boot.o \
 	kprintf.o \
-	idt.o \
-	interrupts.o \
 	kmain.o
 
-TARGET=kernel.elf
+KERNEL_FILE = kernel.elf
+KERNEL_SCRIPT_FILE = linkerScript
+KERNEL_MAP_FILE = kernel.link
 
-all: $(TARGET)
+INTERRUPTS_ARCHIVE = interrupts/interrupts.a
 
-$(TARGET): $(OBJS)
-	$(LINK) $(LDFLAGS) -T linkerScript -Map kernel.link -o $(TARGET) $(OBJS)
+.PHONY: all
+.PHONY: $(SUBDIRS)
+.PHONY: $(INTERRUPTS_ARCHIVE)
+.PHONY: clean
 
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+all: $(KERNEL_FILE)
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+$(INTERRUPTS_ARCHIVE):
+	make -C interrupts BASEMAKE='$(BASEMAKE)'
 
-%.o: %.asm
-	$(AS) $(ASFLAGS) -o $@ $<
+$(KERNEL_FILE): $(OBJS)
+$(KERNEL_FILE): $(INTERRUPTS_ARCHIVE)
+$(KERNEL_FILE): $(KERNEL_SCRIPT_FILE)
+$(KERNEL_FILE): $(SUBDIRS)
+	$(LD) $(LDFLAGS) -T $(KERNEL_SCRIPT_FILE) -Map $(KERNEL_MAP_FILE) -o $(KERNEL_FILE) $(OBJS) $(INTERRUPTS_ARCHIVE)
 
 clean:
-	rm -f $(OBJS)
+	rm -frv $(OBJS) $(KERNEL_FILE) $(KERNEL_MAP_FILE)
+	make -C interrupts clean BASEMAKE='$(BASEMAKE)'
 
-dist-clean: clean
-	rm -f $(TARGET) kernel.link

@@ -1,18 +1,28 @@
-COMPRESS=xz -zfk
-DECOMPRESS=xz -dfk
-SUDO=sudo
-MOUNT=$(SUDO) mount
-UMOUNT=$(SUDO) umount
+SHELL = /bin/sh
+SRCDIR = $(realpath src)
+BASEMAKE = $(realpath ./base.mk)
 
-all:
-	make -C src
-	make images
+include $(BASEMAKE)
+
+.PHONY: all
+.PHONY: $(SRCDIR)
+.PHONY: images
+.PHONY: umount
+.PHONY: compressed-img
+.PHONY: clean
+.PHONY: image-clean
+.PHONY: hd
+
+all: images
+
+$(SRCDIR):
+	make -C $(SRCDIR) BASEMAKE='$(BASEMAKE)'
 
 hd.img: hd.img.xz
-	$(DECOMPRESS) hd.img.xz
+	xz -dfk hd.img.xz
 
 fd.img: fd.img.xz
-	$(DECOMPRESS) fd.img.xz
+	xz -dfk fd.img.xz
 
 hd: hd.img
 	mkdir -pv hd
@@ -22,16 +32,16 @@ umount:
 	$(UMOUNT) hd
 	rmdir -v hd
 
-images: hd.img fd.img hd
+images: $(SRCDIR) hd.img fd.img hd
 	$(SUDO) cp -v src/kernel.elf hd/kernel.elf
 
 compressed-img:
-	$(COMPRESS) hd.img
-	$(COMPRESS) fd.img
+	xz -zfk hd.img
+	xz -zfk fd.img
 
 clean:
-	make -C src clean
+	make -C $(SRCDIR) clean BASEMAKE='$(BASEMAKE)'
 
-dist-clean: compressed-img
-	make -C src dist-clean
+image-clean: compressed-img clean
 	rm -frv hd hd.img fd.img
+
