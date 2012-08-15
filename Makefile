@@ -21,9 +21,6 @@ $(SRCDIR):
 hd.img: hd.img.xz
 	xz -dfk hd.img.xz
 
-fd.img: fd.img.xz
-	xz -dfk fd.img.xz
-
 hd: hd.img
 	mkdir -pv hd
 	$(MOUNT) -o sync,loop,offset=32256 hd.img hd
@@ -32,16 +29,14 @@ umount:
 	$(UMOUNT) hd
 	rmdir -v hd
 
-images: $(SRCDIR) hd.img fd.img hd
+images: $(SRCDIR) hd.img hd
 	$(SUDO) cp -v src/kernel.elf hd/kernel.elf
 
 compressed-img:
 	xz -zfk hd.img
-	xz -zfk fd.img
 
 clean:
 	make -C $(SRCDIR) clean BASEMAKE='$(BASEMAKE)'
 
 image-clean: compressed-img clean
-	rm -frv hd hd.img fd.img
-
+	rm -frv hd hd.img
