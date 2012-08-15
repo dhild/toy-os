@@ -11,4 +11,5 @@ breakpoint_exception:
 section .data
 
 message:
-	db 'Breakpoint detected!', 0
+	db 'Breakpoint detected!'
+	db 0xA, 0
