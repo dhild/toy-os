@@ -2,9 +2,26 @@ global setup_interrupts:function
 global set_interrupt:function
 global set_trap:function
 
-extern CodeSeg, DataSeg
+extern CodeSeg
 
-%define breakpoint  xchg bx,bx
+extern divide_error_exception
+extern debug_exception
+extern nmi_interrupt
+extern breakpoint_exception
+extern overflow_exception
+extern bound_range_exceeded_exception
+extern invalid_opcode_exception
+extern device_not_available_exception
+extern double_fault_exception
+extern invalid_tss_exception
+extern segment_not_present_exception
+extern stack_fault_exception
+extern general_protection_exception
+extern page_fault_exception
+extern x87_fpu_floating_point_error
+extern alignment_check_exception
+extern machine_check_exception
+extern simd_floating_point_exception
 
 bits 64
 
@@ -38,77 +55,84 @@ setup_interrupts:
 	;; Install the base interrupt handlers
 
 	mov rdi, 0x00
-	mov rsi, interrupt_0
+	mov rsi, divide_error_exception
 	call set_interrupt
 
 	mov rdi, 0x01
-	mov rsi, interrupt_1
+	mov rsi, debug_exception
 	call set_interrupt
 
 	mov rdi, 0x02
-	mov rsi, interrupt_2
+	mov rsi, nmi_interrupt
 	call set_interrupt
 
 	mov rdi, 0x03
-	mov rsi, interrupt_3
+	mov rsi, breakpoint_exception
 	call set_interrupt
 
 	mov rdi, 0x04
-	mov rsi, interrupt_4
+	mov rsi, overflow_exception
 	call set_interrupt
 
 	mov rdi, 0x05
-	mov rsi, interrupt_5
+	mov rsi, bound_range_exceeded_exception
 	call set_interrupt
 
 	mov rdi, 0x06
-	mov rsi, interrupt_6
+	mov rsi, invalid_opcode_exception
 	call set_interrupt
 
 	mov rdi, 0x07
-	mov rsi, interrupt_7
+	mov rsi, device_not_available_exception
 	call set_interrupt
 
 	mov rdi, 0x08
-	mov rsi, interrupt_8
+	mov rsi, double_fault_exception
 	call set_interrupt
 
+	;; 0x09 is  Coprocessor Segment Overrun
+	;; Listed as Intel reserved, do not use.
+
 	mov rdi, 0x0A
-	mov rsi, interrupt_10
+	mov rsi, invalid_tss_exception
 	call set_interrupt
 
 	mov rdi, 0x0B
-	mov rsi, interrupt_11
+	mov rsi, segment_not_present_exception
 	call set_interrupt
 
 	mov rdi, 0x0C
-	mov rsi, interrupt_12
+	mov rsi, stack_fault_exception
 	call set_interrupt
 
 	mov rdi, 0x0D
-	mov rsi, interrupt_13
+	mov rsi, general_protection_exception
 	call set_interrupt
 
 	mov rdi, 0x0E
-	mov rsi, interrupt_14
+	mov rsi, page_fault_exception
 	call set_interrupt
 
+	;; 0x0F is Intel reserved
+
 	mov rdi, 0xA0
-	mov rsi, interrupt_16
+	mov rsi, x87_fpu_floating_point_error
 	call set_interrupt
 
 	mov rdi, 0xA1
-	mov rsi, interrupt_17
+	mov rsi, alignment_check_exception
 	call set_interrupt
 
 	mov rdi, 0xA2
-	mov rsi, interrupt_18
+	mov rsi, machine_check_exception
 	call set_interrupt
 
 	mov rdi, 0xA3
-	mov rsi, interrupt_19
+	mov rsi, simd_floating_point_exception
 	call set_interrupt
 
+	;; 0xA4 through 0xAF are Intel reserved.
+	
 	xchg bx, bx
 	;; Enable the interrupts and return
 	lidt [table.Pointer]
@@ -183,112 +207,3 @@ load_descriptor:
 	pop rsi
 	pop rdi
 	ret
-
-extern divide_error_exception
-extern debug_exception
-extern nmi_interrupt
-extern breakpoint_exception
-extern overflow_exception
-extern bound_range_exceeded_exception
-extern invalid_opcode_exception
-extern device_not_available_exception
-extern double_fault_exception
-extern invalid_tss_exception
-extern segment_not_present_exception
-extern stack_fault_exception
-extern general_protection_exception
-extern page_fault_exception
-extern x87_fpu_floating_point_error
-extern alignment_check_exception
-extern machine_check_exception
-extern simd_floating_point_exception
-
-interrupt_0:
-	breakpoint
-	call divide_error_exception
-	iretq
-
-interrupt_1:
-	breakpoint
-	call debug_exception
-	iretq
-
-interrupt_2:
-	breakpoint
-	call nmi_interrupt
-	iretq
-
-interrupt_3:
-	breakpoint
-	call breakpoint_exception
-	iretq
-
-interrupt_4:
-	breakpoint
-	call overflow_exception
-	iretq
-
-interrupt_5:
-	breakpoint
-	call bound_range_exceeded_exception
-	iretq
-
-interrupt_6:
-	breakpoint
-	call invalid_opcode_exception
-	iretq
-
-interrupt_7:
-	breakpoint
-	call device_not_available_exception
-	iretq
-
-interrupt_8:
-	breakpoint
-	call double_fault_exception
-	iretq
-
-interrupt_10:
-	breakpoint
-	call invalid_tss_exception
-	iretq
-
-interrupt_11:
-	breakpoint
-	call segment_not_present_exception
-	iretq
-
-interrupt_12:
-	breakpoint
-	call stack_fault_exception
-	iretq
-
-interrupt_13:
-	breakpoint
-	call general_protection_exception
-	iretq
-
-interrupt_14:
-	breakpoint
-	call page_fault_exception
-	iretq
-
-interrupt_16:
-	breakpoint
-	call x87_fpu_floating_point_error
-	iretq
-
-interrupt_17:
-	breakpoint
-	call alignment_check_exception
-	iretq
-
-interrupt_18:
-	breakpoint
-	call machine_check_exception
-	iretq
-
-interrupt_19:
-	breakpoint
-	call simd_floating_point_exception
-	iretq
