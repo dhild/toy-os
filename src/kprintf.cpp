@@ -1,5 +1,4 @@
 #include "kprintf.h"
-#include "kdebug.h"
 
 void print_dec( qword value ) {
   char characters[21];
@@ -62,6 +61,5 @@ void print_hex( qword value ) {
     }
     } // switch(c)
   }
-  kbreak();
   print_string( hex_string );
 }

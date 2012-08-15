@@ -130,7 +130,6 @@ setup_interrupts:
 
 	;; 0xA4 through 0xAF are Intel reserved.
 	
-	xchg bx, bx
 	;; Enable the interrupts and return
 	lidt [table.Pointer]
 
