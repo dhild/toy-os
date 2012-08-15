@@ -11,9 +11,7 @@
 #include "multiboot.h"
 #include "types.h"
 
-extern "C" void boot(struct mb_header *header );
-
-extern "C" void kmain();
+extern "C" void kmain(struct mb_header*);
 
 #endif	/* _MAIN_H */
 

@@ -96,7 +96,13 @@ print_char:
 	mul qword [height]
 	cmp [offset], rax
 	jle .noScroll
+	push rax
+	push rdx
+	push rsi
 	call scroll_print
+	pop rsi
+	pop rdx
+	pop rax
 .noScroll:
 	
 	mov rax, rdi
@@ -144,16 +150,20 @@ print_char:
 	ret
 
 print_string:
-	mov rsi, rdi
+	push rbx		; Use preserved registers
+	push r12
+	mov r12, rdi
 .loop:
-	movzx cx, [rsi]
-	cmp cl, 0
+	movzx bx, [r12]
+	cmp bl, 0
 	je .end
 
-	mov rdi, rcx
+	mov rdi, rbx
 	call print_char
-	
-	inc rsi
+
+	inc r12
 	jmp .loop
 .end:
+	pop r12
+	pop rbx
 	ret

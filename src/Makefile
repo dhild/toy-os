@@ -1,11 +1,10 @@
 include $(BASEMAKE)
 
 OBJS = \
- 	multiboot.o \
+	multiboot.o \
 	paging.o \
 	idt.o \
 	printing.o \
-	boot.o \
 	kprintf.o \
 	kmain.o
 

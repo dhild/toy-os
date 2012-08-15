@@ -1,7 +1,9 @@
 global loader:function  	; making entry point visible to linker
 extern kernel_begin_addr, end_of_data, end_of_kernel
 extern make_page_tables, PML4Tables
-	
+extern setup_printing, setup_interrupts
+extern kmain
+
 section .text
 bits 32
 
@@ -86,8 +88,8 @@ loader:
 	jmp CodeSeg:Realm64 ; Set the code segment and enter 64-bit long mode.; Use 64-bit.
 
 	;; Now we're in 64-bit mode!
-	bits 64
-	extern boot             ; boot is defined elsewhere
+bits 64
+
 Realm64:
 	cli			; Clear the interrupt flag.
 	mov ax, DataSeg	; Set the A-register to the data descriptor.
@@ -96,8 +98,14 @@ Realm64:
 	mov es, ax		; Set the extra segment to the A-register.
 	mov fs, ax		; Set the F-segment to the A-register.
 	mov gs, ax		; Set the G-segment to the A-register.
-	
-	call boot 		; Call the kernel proper
+
+	xchg bx, bx
+	call setup_printing
+
+	call setup_interrupts
+
+	xchg bx, bx
+	call kmain 		; Call the kernel proper
 	jmp hang		; Hang if we ever return
 
 global NullSeg, CodeSeg, DataSeg, DPL1CodeSeg, DPL1DataSeg
