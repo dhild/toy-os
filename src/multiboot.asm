@@ -97,7 +97,6 @@ Realm64:
 	mov fs, ax		; Set the F-segment to the A-register.
 	mov gs, ax		; Set the G-segment to the A-register.
 	
-	xchg bx, bx
 	call boot 		; Call the kernel proper
 	jmp hang		; Hang if we ever return
 

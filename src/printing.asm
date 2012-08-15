@@ -33,6 +33,8 @@ setup_printing:
 	;; Prepares for printing.
 
 clear_screen:
+	push rbx
+
 	mov rdi, [BaseAddr]
 	mov rcx, [width]
 	mov rbx, [height]
@@ -46,21 +48,17 @@ clear_screen:
 
 	mov [offset], rax
 
+	pop rbx
 	ret
 
 set_print_attribute:
-	mov al, [esp+16]
+	mov ax, di
 	mov [attribute], al
 	ret
 	
 scroll_print:
-	push rdi
-	push rsi
-	push rax
 	push rbx
-	push rcx
-	push rdx
-	
+		
 	mov rdi, [BaseAddr]
 	mov rsi, [BaseAddr]
 	mov rax, [width]
@@ -84,21 +82,12 @@ scroll_print:
 .store:
 	mov [offset], rcx
 
-	pop rdx
-	pop rcx
 	pop rbx
-	pop rax
-	pop rsi
-	pop rdi
 	ret
 
 print_char:
-	push rsi
-	push rax
 	push rbx
-	push rcx
-	push rdx
-	
+		
 	;; If we need to scroll, do so.
 	mov rax, [charSize]
 	xor rdx, rdx
@@ -151,18 +140,10 @@ print_char:
 	mov [offset], rdx
 
 .exit:
-	pop rdx
-	pop rcx
 	pop rbx
-	pop rax
-	pop rsi
 	ret
 
 print_string:
-	push rdi
-	push rsi
-	push rcx
-
 	mov rsi, rdi
 .loop:
 	movzx cx, [rsi]
@@ -175,7 +156,4 @@ print_string:
 	inc rsi
 	jmp .loop
 .end:
-	pop rcx
-	pop rsi
-	pop rdi
 	ret

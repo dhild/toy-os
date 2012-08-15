@@ -40,10 +40,6 @@ section .text
 	;; interrupts.h. All other interrupts are blank.
 	;; void setup_interrupts();
 setup_interrupts:
-	push rdi
-	push rsi
-	push rax
-	push rcx
 	cli
 
 	;; Zero out the tables
@@ -74,6 +70,7 @@ setup_interrupts:
 	mov rsi, overflow_exception
 	call set_interrupt
 
+	
 	mov rdi, 0x05
 	mov rsi, bound_range_exceeded_exception
 	call set_interrupt
@@ -137,31 +134,17 @@ setup_interrupts:
 	;; Enable the interrupts and return
 	lidt [table.Pointer]
 
-	pop rcx
-	pop rax
-	pop rsi
-	pop rdi
 	sti
 	ret
 
 ; void set_interrupt( byte number in rdi, void (*handler)() in rsi )
 set_interrupt:
-	push rdi
-	push rsi
-	push rax
-	push rcx
-	
 	mov rcx, 0xE	; Type: 64-bit interrupt gate
 
 	jmp load_descriptor ; This will return to the caller when done
 
 ; void set_trap( byte number in rdi, void (*handler)() in rsi );
 set_trap:
-	push rdi
-	push rsi
-	push rax
-	push rcx
-	
 	mov rcx, 0xF ; Type: 64-bit trap gate
 
 ; Loads an interrupt descriptor
@@ -202,8 +185,4 @@ load_descriptor:
 	add rdi, 8
 	mov qword [rdi], rax
 
-	pop rcx
-	pop rax
-	pop rsi
-	pop rdi
 	ret
