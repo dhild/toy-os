@@ -1,6 +1,4 @@
 global setup_interrupts:function
-global set_interrupt:function
-global set_trap:function
 
 extern CodeSeg
 
@@ -27,11 +25,11 @@ bits 64
 
 section .data
 
-	align 8
+align 8
 table:
-	times (256 * 2) dq 0
+	times (256 * 16) db 0
 .Pointer:			; The IDT-pointer.
-	dw $ - table - 1	; Limit.
+	dw (256 * 16)		; Limit.
 	dq table		; Base.
 
 section .text
@@ -40,118 +38,10 @@ section .text
 	;; interrupts.h. All other interrupts are blank.
 	;; void setup_interrupts();
 setup_interrupts:
-	cli
-
-	;; Zero out the tables
-	mov rdi, table
-	xor rax, rax
-	mov rcx, 512
-	rep stosd
 
 	;; Install the base interrupt handlers
-
-	mov rdi, 0x00
-	mov rsi, divide_error_exception
-	call set_interrupt
-
-	mov rdi, 0x01
-	mov rsi, debug_exception
-	call set_interrupt
-
-	mov rdi, 0x02
-	mov rsi, nmi_interrupt
-	call set_interrupt
-
-	mov rdi, 0x03
-	mov rsi, breakpoint_exception
-	call set_interrupt
-
-	mov rdi, 0x04
-	mov rsi, overflow_exception
-	call set_interrupt
-
-	
-	mov rdi, 0x05
-	mov rsi, bound_range_exceeded_exception
-	call set_interrupt
-
-	mov rdi, 0x06
-	mov rsi, invalid_opcode_exception
-	call set_interrupt
-
-	mov rdi, 0x07
-	mov rsi, device_not_available_exception
-	call set_interrupt
-
-	mov rdi, 0x08
-	mov rsi, double_fault_exception
-	call set_interrupt
-
-	;; 0x09 is  Coprocessor Segment Overrun
-	;; Listed as Intel reserved, do not use.
-
-	mov rdi, 0x0A
-	mov rsi, invalid_tss_exception
-	call set_interrupt
-
-	mov rdi, 0x0B
-	mov rsi, segment_not_present_exception
-	call set_interrupt
-
-	mov rdi, 0x0C
-	mov rsi, stack_fault_exception
-	call set_interrupt
-
-	mov rdi, 0x0D
-	mov rsi, general_protection_exception
-	call set_interrupt
-
-	mov rdi, 0x0E
-	mov rsi, page_fault_exception
-	call set_interrupt
-
-	;; 0x0F is Intel reserved
-
-	mov rdi, 0xA0
-	mov rsi, x87_fpu_floating_point_error
-	call set_interrupt
-
-	mov rdi, 0xA1
-	mov rsi, alignment_check_exception
-	call set_interrupt
-
-	mov rdi, 0xA2
-	mov rsi, machine_check_exception
-	call set_interrupt
-
-	mov rdi, 0xA3
-	mov rsi, simd_floating_point_exception
-	call set_interrupt
-
-	;; 0xA4 through 0xAF are Intel reserved.
-	
-	;; Enable the interrupts and return
-	lidt [table.Pointer]
-
-	sti
-	ret
-
-; void set_interrupt( byte number in rdi, void (*handler)() in rsi )
-set_interrupt:
-	mov rcx, 0xE	; Type: 64-bit interrupt gate
-
-	jmp load_descriptor ; This will return to the caller when done
-
-; void set_trap( byte number in rdi, void (*handler)() in rsi );
-set_trap:
-	mov rcx, 0xF ; Type: 64-bit trap gate
-
-; Loads an interrupt descriptor
-; Params:
-;       rdi - interrupt number
-;       rsi - handler pointer
-;       rcx - type flag
-load_descriptor:
+%macro interrupt 2
+	;; Sets an interrupt descriptor
 	;; dword 0: (31:16) segment selector
 	;;          (15:00) offset 15:00
 	;; dword 1: (31:16) offset 31:16
@@ -161,12 +51,12 @@ load_descriptor:
 	;; dword 3: (31:00) Reserved (sign extended of offset)
 
 	;; Set rdi to point to the descriptor:
-	and rdi, 0xFF
+	mov rdi, %1
 	shl rdi, 4
 	add rdi, table
 
 	;; rax first contains dwords 1 and 0:
-	mov rax, rsi
+	mov rax, %2
 	shr rax, 8
 	and rax, 0xFFFF00
 	or rax, 0x80
@@ -183,5 +73,30 @@ load_descriptor:
 	sar rax, 32
 	add rdi, 8
 	mov qword [rdi], rax
+%endmacro
 
-	ret
+	interrupt 0, divide_error_exception
+	interrupt 1, debug_exception
+	interrupt 2, nmi_interrupt
+	interrupt 3, breakpoint_exception
+	interrupt 4, overflow_exception
+	interrupt 5, bound_range_exceeded_exception
+	interrupt 6, invalid_opcode_exception
+	interrupt 7, device_not_available_exception
+	interrupt 8, double_fault_exception
+	interrupt 10, invalid_tss_exception
+	interrupt 11, segment_not_present_exception
+	interrupt 12, stack_fault_exception
+	interrupt 13, general_protection_exception
+	interrupt 14, page_fault_exception
+	interrupt 16, x87_fpu_floating_point_error
+	interrupt 17, alignment_check_exception
+	interrupt 18, machine_check_exception
+	interrupt 19, simd_floating_point_exception
+
+	xchg bx, bx
+	;; Enable the interrupts and return
+	lidt [table.Pointer]
+
+	sti
+	jmp r12
