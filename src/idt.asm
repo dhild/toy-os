@@ -55,24 +55,20 @@ setup_interrupts:
 	shl rdi, 4
 	add rdi, table
 
-	;; rax first contains dwords 1 and 0:
-	mov rax, %2
-	shr rax, 8
-	and rax, 0xFFFF00
-	or rax, 0x80
-	or rax, rcx
-	shl rax, 24
-	mov cx, CodeSeg
-	or ax, cx
-	shl rax, 16
-	or ax, si
-	mov qword [rdi], rax
+	;; dword 0
+	mov rbx, %2
+	mov word [rdi], bx
+	mov word [rdi+2], CodeSeg
 
-	;; Now dwords 3 and 2:
-	mov rax, rsi
-	sar rax, 32
-	add rdi, 8
-	mov qword [rdi], rax
+	;; dword 1
+	mov eax, ebx
+	and eax, 0xFFFF0000
+	or ax, 0x8E00
+	mov dword [rdi+4], eax
+
+	;; dword 2 and 3
+	sar rbx, 32
+	mov qword [rdi+8], rbx
 %endmacro
 
 	interrupt 0, divide_error_exception
