@@ -10,7 +10,7 @@ OBJS = \
 
 KERNEL_FILE = kernel.elf
 KERNEL_SCRIPT_FILE = linkerScript
-KERNEL_MAP_FILE = kernel.link
+KERNEL_MAP_FILE = kernel.map
 
 INTERRUPTS_ARCHIVE = interrupts/interrupts.a
 
