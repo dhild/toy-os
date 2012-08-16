@@ -94,11 +94,13 @@ Realm64:
 
 	xchg bx, bx
 	mov r12, .done_printing
-	jmp setup_printing
+	mov rax, setup_printing
+	jmp rax
 .done_printing:
 	xchg bx, bx
 	mov r12, .done_idt
-	jmp setup_interrupts
+	mov rax, setup_interrupts
+	jmp rax
 .done_idt:
 
 	;; Store the boot information
@@ -112,7 +114,8 @@ Realm64:
 	mov rsp, stack.end
 
 	mov rdi, mb_info
-	call kmain 		; Call the kernel proper
+	mov rax, kmain
+	call rax 		; Call the kernel proper
 .halt:
 	cli
 	hlt			; Halt if we manage to return

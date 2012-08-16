@@ -13,7 +13,7 @@ UMOUNT = $(SUDO) umount
 WARNING_FLAGS = -Wall -Wextra -Werror
 STANDALONE_FLAGS = -nostdlib -fno-builtin -nostartfiles -nodefaultlibs -ffreestanding
 CONVENTION_FLAGS = -fno-exceptions -fno-stack-protector -mno-red-zone
-MODE_FLAGS = -m64 -fPIC -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow
+MODE_FLAGS = -m64 -mcmodel=large -fPIC -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow
 CFLAGS = $(WARNING_FLAGS) $(STANDALONE_FLAGS) $(CONVENTION_FLAGS) $(MODE_FLAGS) -g
 CXXFLAGS = $(CFLAGS) -fno-rtti
 NASMFLAGS = -f elf64 -g

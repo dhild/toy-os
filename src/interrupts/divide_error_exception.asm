@@ -1,4 +1,4 @@
-global divide_error_exception
+global divide_error_exception:data
 extern print_string
 bits 64
 section .text

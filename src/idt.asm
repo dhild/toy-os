@@ -1,4 +1,5 @@
 global setup_interrupts:function
+bits 64
 
 extern CodeSeg
 
@@ -21,13 +22,11 @@ extern alignment_check_exception
 extern machine_check_exception
 extern simd_floating_point_exception
 
-bits 64
-
 section .data
 
 align 8
 table:
-	times (256 * 16) db 0
+	times (512) dd 0
 .Pointer:			; The IDT-pointer.
 	dw (256 * 16)		; Limit.
 	dq table		; Base.
@@ -38,7 +37,6 @@ section .text
 	;; interrupts.h. All other interrupts are blank.
 	;; void setup_interrupts();
 setup_interrupts:
-
 	;; Install the base interrupt handlers
 %macro interrupt 2
 	;; Sets an interrupt descriptor
@@ -53,12 +51,14 @@ setup_interrupts:
 	;; Set rdi to point to the descriptor:
 	mov rdi, %1
 	shl rdi, 4
-	add rdi, table
+	mov rbx, table
+	add rdi, rbx
 
 	;; dword 0
 	mov rbx, %2
 	mov word [rdi], bx
-	mov word [rdi+2], CodeSeg
+	mov rbx, CodeSeg
+	mov word [rdi+2], bx
 
 	;; dword 1
 	mov eax, ebx

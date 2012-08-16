@@ -14,6 +14,8 @@ KERNEL_MAP_FILE = kernel.map
 
 INTERRUPTS_ARCHIVE = interrupts/interrupts.a
 
+SUBDIRS = interrupts
+
 .PHONY: all
 .PHONY: $(SUBDIRS)
 .PHONY: $(INTERRUPTS_ARCHIVE)
@@ -21,8 +23,17 @@ INTERRUPTS_ARCHIVE = interrupts/interrupts.a
 
 all: $(KERNEL_FILE)
 
-$(INTERRUPTS_ARCHIVE):
+multiboot.o: multiboot.asm $(KERNEL_SCRIPT_FILE)
+paging.o: paging.asm multiboot.asm
+idt.o: idt.asm
+printing.o: printing.asm multiboot.asm
+kprintf.o: kprintf.cpp types.h main.h kprintf.h
+kmain.o: kmain.cpp types.h main.h kprintf.h multiboot.h
+
+interrupts:
 	make -C interrupts BASEMAKE='$(BASEMAKE)'
+
+$(INTERRUPTS_ARCHIVE): interrupts
 
 $(KERNEL_FILE): $(OBJS)
 $(KERNEL_FILE): $(INTERRUPTS_ARCHIVE)
