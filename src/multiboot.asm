@@ -46,18 +46,9 @@ loader:
 	jne hang
 
 	;; Store the boot info structure
-	mov ecx, (mb_info.end - mb_info)
-	mov esi, ebx
-	lea edi, [mb_info]
-	rep movsb
+	mov ebp, ebx
+	mov esp, stack.end
 	
-	;; Set up the stack and store the boot info struct address:
-	mov esp, stack+STACKSIZE
-	lea eax, [mb_info]
-	xor ecx, ecx
-	push eax
-	push ecx
-
 	;; Set up for 64-bit mode
 	mov eax, cr0		; 1. Disable paging, bit 31 of cr0
 	and eax, 0x7FFFFFFF
@@ -77,6 +68,7 @@ loader:
 	or eax, 0x00000100
 	wrmsr
 
+	cli
 	mov eax, cr0		; 5. Enable paging, bit 31 of cr0
 	or eax, 0x80000000
 	mov cr0, eax
@@ -100,10 +92,21 @@ Realm64:
 	mov gs, ax		; Set the G-segment to the A-register.
 
 	xchg bx, bx
-	call setup_printing
+	mov r12, .done_printing
+	jmp setup_printing
+.done_printing:
+	xchg bx, bx
+	mov r12, .done_idt
+	jmp setup_interrupts
+.done_idt:
 
-	call setup_interrupts
-
+	mov rcx, (mb_info.end - mb_info)
+	mov rsi, rbp
+	lea rdi, [mb_info]
+	rep movsb
+	
+	mov rsp, stack.end
+	
 	xchg bx, bx
 	call kmain 		; Call the kernel proper
 	jmp hang		; Hang if we ever return
@@ -230,4 +233,4 @@ section .bss
 	align 4
 stack:
 	   resb STACKSIZE	; reserve stack on a doubleword boundary
-endstack:
+.end:

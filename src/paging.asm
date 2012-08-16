@@ -107,13 +107,13 @@ make_page_tables:
 
 .multiboot:
 	;; Check for a memory size from multiboot.
-	mov eax, [mb_info.flags]
+	mov eax, [ebp]
 	and eax, 0x1
 	cmp eax, 0x1
 	jne .multiboot_mmap
 
 	;; multiboot has a 'limit' address, in Kb, which is what we need, minus 1MB
-	mov ecx, [mb_info.mem_upper]
+	mov ecx, [ebp+8]
 	add ecx, 0x400
 	shr ecx, 2
 	push ecx
