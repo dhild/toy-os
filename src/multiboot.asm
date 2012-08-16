@@ -31,9 +31,10 @@ MultiBootHeader:
 	dd 0                 ; height (flags[2])
 	dd 0                 ; depth (flags[2])
 
+	times 64 dd 0
+TempStack:
 hang:
 	;; Halts the machine
-	xchg bx, bx
 	hlt
 	jmp hang
 
@@ -47,7 +48,8 @@ loader:
 
 	;; Store the boot info structure
 	mov ebp, ebx
-	mov esp, stack.end
+	;; Temporarily set up the stack (we will do this again in 64-bit mode)
+	mov esp, TempStack
 	
 	;; Set up for 64-bit mode
 	mov eax, cr0		; 1. Disable paging, bit 31 of cr0
@@ -68,7 +70,6 @@ loader:
 	or eax, 0x00000100
 	wrmsr
 
-	cli
 	mov eax, cr0		; 5. Enable paging, bit 31 of cr0
 	or eax, 0x80000000
 	mov cr0, eax
@@ -100,16 +101,22 @@ Realm64:
 	jmp setup_interrupts
 .done_idt:
 
+	;; Store the boot information
 	mov rcx, (mb_info.end - mb_info)
-	mov rsi, rbp
-	lea rdi, [mb_info]
+	xor rsi, rsi
+	mov esi, ebp
+	mov rdi, mb_info
 	rep movsb
-	
+
+	;; Initialize the stack pointer where we want it
 	mov rsp, stack.end
-	
-	xchg bx, bx
+
+	mov rdi, mb_info
 	call kmain 		; Call the kernel proper
-	jmp hang		; Hang if we ever return
+.halt:
+	cli
+	hlt			; Halt if we manage to return
+	jmp .halt
 
 global NullSeg, CodeSeg, DataSeg, DPL1CodeSeg, DPL1DataSeg
 
