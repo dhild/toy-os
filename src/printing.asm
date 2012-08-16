@@ -1,4 +1,4 @@
-global setup_printing:function
+global setup_printing
 global clear_screen:function
 global scroll_print:function
 global print_string:function
@@ -31,6 +31,21 @@ section .text
 	
 setup_printing:
 	;; Prepares for printing.
+	;; Basically, clear_screen without any stack movement.
+	mov rdi, [BaseAddr]
+	mov rcx, [width]
+	mov rbx, [height]
+	mov rax, [charSize]
+	xor rdx, rdx
+	mul rcx
+	mul rbx
+	mov rcx, rax
+	xor rax, rax
+	rep stosb
+
+	mov [offset], rax
+
+	jmp r12
 
 clear_screen:
 	push rbx
