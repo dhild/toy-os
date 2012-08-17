@@ -63,13 +63,14 @@ setup_interrupts:
 	mov word [rdi+2], bx
 
 	;; dword 1
-	mov eax, ebx
+	mov rax, %2
 	and eax, 0xFFFF0000
 	or ax, 0x8E00
 	mov dword [rdi+4], eax
 
 	;; dword 2 and 3
-	sar rbx, 32
+	mov rbx, %2
+	shr rbx, 32
 	mov qword [rdi+8], rbx
 %endmacro
 
