@@ -1,8 +1,7 @@
 global loader:function  	; making entry point visible to linker
 extern kernel_begin_addr, end_of_data, end_of_kernel
 extern make_page_tables, PML4Tables
-extern setup_printing, setup_interrupts
-extern kmain
+extern kmain, setup_interrupts, setup_printing
 
 section .text
 bits 32
@@ -76,16 +75,12 @@ loader:
 
 	;;  The change from compatibility to 64-bit mode, we need a fresh jump
 	;;  using a 64-bit GDT pointer
-	lgdt [GDT64.Pointer] ; Load the 64-bit global descriptor table.
-	;;     jmp Realm64
-	jmp CodeSeg:Realm64 ; Set the code segment and enter 64-bit long mode.; Use 64-bit.
-
-	;; Now we're in 64-bit mode!
+	lgdt [GDT64.Pointer]	; Load the 64-bit global descriptor table.
+	jmp CodeSeg:Realm64	; Set the code segment and enter 64-bit long mode.; Use 64-bit.
 bits 64
-
 Realm64:
-	cli			; Clear the interrupt flag.
-	mov ax, DataSeg	; Set the A-register to the data descriptor.
+	sti			; Clear the interrupt flag.
+	mov ax, DataSeg		; Set the A-register to the data descriptor.
 	mov ss, ax
 	mov ds, ax		; Set the data segment to the A-register.
 	mov es, ax		; Set the extra segment to the A-register.
@@ -95,6 +90,7 @@ Realm64:
 	xchg bx, bx
 	mov r12, .done_printing
 	mov rax, setup_printing
+	mov rbx, [rax]
 	jmp rax
 .done_printing:
 	xchg bx, bx
@@ -121,7 +117,7 @@ Realm64:
 	hlt			; Halt if we manage to return
 	jmp .halt
 
-global NullSeg, CodeSeg, DataSeg, DPL1CodeSeg, DPL1DataSeg
+global CodeSeg, DataSeg
 
 GDT64:				; Global Descriptor Table (64-bit).
 NullSeg: equ $ - GDT64	; The null descriptor.
@@ -130,7 +126,7 @@ CodeSeg: equ $ - GDT64	; The kernel code descriptor.
 	dw 0xFFFF	; Limit (low)
 	dw 0		; Base (low)
 	db 0		; Base (middle)
-	db 10011000B	; P | DPL | S | Type [Code | Conform | Read | Dirty]
+	db 10011010B	; P | DPL | S | Type [Code | Conform | Read | Dirty]
 	db 10101111B	; G | D/B | L | Avl | Limit (high)
 	db 0		; Base (high)
 DataSeg: equ $ - GDT64	; The kernel data descriptor.
@@ -138,48 +134,6 @@ DataSeg: equ $ - GDT64	; The kernel data descriptor.
 	dw 0		; Base (low)
 	db 0		; Base (middle)
 	db 10010010B	; P | DPL | S | Type [Data | Exp-Dwn | Write | Dirty]
-	db 10101111B	; G | D/B | L | Avl | Limit (high)
-	db 0		; Base (high)
-DPL1CodeSeg: equ $ - GDT64  ; The dpl 1 code descriptor.
-	dw 0xFFFF	; Limit (low)
-	dw 0		; Base (low)
-	db 0		; Base (middle)
-	db 10111000B	; P | DPL | S | Type (Code, Execute-Only)
-	db 10101111B	; G | D/B | L | Avl | Limit (high)
-	db 0		; Base (high)
-DPL1DataSeg: equ $ - GDT64  ; The dpl 1 data descriptor.
-	dw 0xFFFF	; Limit (low)
-	dw 0		; Base (low)
-	db 0		; Base (middle)
-	db 10110010B	; P | DPL | S | Type (Data, Read/Write)
-	db 10101111B	; G | D/B | L | Avl | Limit (high)
-	db 0		; Base (high)
-DPL2CodeSeg: equ $ - GDT64  ; The dpl 2 code descriptor.
-	dw 0xFFFF	; Limit (low)
-	dw 0		; Base (low)
-	db 0		; Base (middle)
-	db 11011000B	; P | DPL | S | Type (Code, Execute-Only)
-	db 10101111B	; G | D/B | L | Avl | Limit (high)
-	db 0		; Base (high)
-DPL2DataSeg: equ $ - GDT64  ; The dpl 2 data descriptor.
-	dw 0xFFFF	; Limit (low)
-	dw 0		; Base (low)
-	db 0		; Base (middle)
-	db 11010010B	; P | DPL | S | Type (Data, Read/Write)
-	db 10101111B	; G | D/B | L | Avl | Limit (high)
-	db 0		; Base (high)
-DPL3CodeSeg: equ $ - GDT64  ; The dpl 3 code descriptor.
-	dw 0xFFFF	; Limit (low)
-	dw 0		; Base (low)
-	db 0		; Base (middle)
-	db 11111000B	; P | DPL | S | Type (Code, Execute-Only)
-	db 10101111B	; G | D/B | L | Avl | Limit (high)
-	db 0		; Base (high)
-DPL3DataSeg: equ $ - GDT64  ; The dpl 3 data descriptor.
-	dw 0xFFFF	; Limit (low)
-	dw 0		; Base (low)
-	db 0		; Base (middle)
-	db 11110010B	; P | DPL | S | Type (Data, Read/Write)
 	db 10101111B	; G | D/B | L | Avl | Limit (high)
 	db 0		; Base (high)
 	
@@ -191,6 +145,7 @@ IOMap:
 	    times 32 db 0
 	    db 0xFF
 
+section .data
 global mb_info, mb_info.flags, mb_info.mem_upper
 mb_info:
 .flags:
