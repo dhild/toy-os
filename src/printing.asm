@@ -32,10 +32,14 @@ section .text
 setup_printing:
 	;; Prepares for printing.
 	;; Basically, clear_screen without any stack movement.
-	mov rdi, [BaseAddr]
-	mov rcx, [width]
-	mov rbx, [height]
-	mov rax, [charSize]
+	mov rsi, BaseAddr
+	mov rdi, [rsi]
+	mov rsi, width
+	mov rcx, [rsi]
+	mov rsi, height
+	mov rbx, [rsi]
+	mov rsi, charSize
+	mov rax, [rsi]
 	xor rdx, rdx
 	mul rcx
 	mul rbx
@@ -43,17 +47,22 @@ setup_printing:
 	xor rax, rax
 	rep stosb
 
-	mov [offset], rax
+	mov rdi, offset
+	mov [rdi], rax
 
 	jmp r12
 
 clear_screen:
 	push rbx
 
-	mov rdi, [BaseAddr]
-	mov rcx, [width]
-	mov rbx, [height]
-	mov rax, [charSize]
+	mov rsi, BaseAddr
+	mov rdi, [rsi]
+	mov rsi, width
+	mov rcx, [rsi]
+	mov rsi, height
+	mov rbx, [rsi]
+	mov rsi, charSize
+	mov rax, [rsi]
 	xor rdx, rdx
 	mul rcx
 	mul rbx
@@ -61,33 +70,41 @@ clear_screen:
 	xor rax, rax
 	rep stosb
 
-	mov [offset], rax
+	mov rdi, offset
+	mov [rdi], rax
 
 	pop rbx
 	ret
 
 set_print_attribute:
 	mov ax, di
-	mov [attribute], al
+	mov rdi, attribute
+	mov [rdi], al
 	ret
 	
 scroll_print:
 	push rbx
-		
-	mov rdi, [BaseAddr]
-	mov rsi, [BaseAddr]
-	mov rax, [width]
+	push r12
+
+	mov r12, BaseAddr
+	mov rdi, [r12]
+	mov rsi, [r12]
+	mov r12, width
+	mov rax, [r12]
 	xor rdx, rdx
-	mul qword [charSize]
+	mov r12, charSize
+	mul qword [r12]
 	add rsi, rax
 	mov rbx, rax
-	mul qword [width]
+	mov r12, width
+	mul qword [r12]
 	sub rax, rbx
 	mov rcx, rax
 	shr rcx, 3
 	rep movsq
 
-	mov rcx, [offset]
+	mov r12, offset
+	mov rcx, [r12]
 	cmp rcx, rdx
 	jle .lowOffset
 	sub rcx, rdx
@@ -95,21 +112,27 @@ scroll_print:
 .lowOffset:
 	xor rcx, rcx
 .store:
-	mov [offset], rcx
+	mov r12, offset
+	mov [r12], rcx
 
+	pop r12
 	pop rbx
 	ret
 
 print_char:
 	push rbx
-		
+
 	;; If we need to scroll, do so.
-	mov rax, [charSize]
+	mov rdi, charSize
+	mov rax, [rdi]
 	xor rdx, rdx
-	mul qword [width]
+	mov rdi, width
+	mul qword [rdi]
 	mov rsi, rax
-	mul qword [height]
-	cmp [offset], rax
+	mov rdi, height
+	mul qword [rdi]
+	mov rdi, offset
+	cmp [rdi], rax
 	jle .noScroll
 	push rax
 	push rdx
@@ -126,12 +149,13 @@ print_char:
 	cmp al, 0x0A
 	jne .testTab
 
-	mov rax, [offset]
+	mov rdi, offset
+	mov rax, [rdi]
 	xor rdx, rdx
 	div rsi
 	add rax, 1
 	mul rsi
-	mov [offset], rax
+	mov [rdi], rax
 	jmp .exit
 
 .testTab:
@@ -139,26 +163,33 @@ print_char:
 	cmp al, 0x09
 	jne .normalChar
 
-	mov rcx, [tabsize]
-	mov rax, [offset]
+	mov rdi, tabsize
+	mov rcx, [rdi]
+	mov rdi, offset
+	mov rax, [rdi]
 	xor rdx, rdx
 	div rcx
 	add rax, 1
 	mul rcx
-	mov [offset], rax
+	mov rdi, offset
+	mov [rdi], rax
 	jmp .exit
 
 .normalChar:
-	mov ah, [attribute]
+	mov rdi, attribute
+	mov ah, [rdi]
 
-	mov rdx, [BaseAddr]
-	add rdx, [offset]
+	mov rdi, BaseAddr
+	mov rdx, [rdi]
+	mov rdi, offset
+	add rdx, [rdi]
 
 	mov [rdx], ax
 
-	mov rdx, [offset]
+	mov rdi, offset
+	mov rdx, [rdi]
 	add rdx, 2
-	mov [offset], rdx
+	mov [rdi], rdx
 
 .exit:
 	pop rbx
