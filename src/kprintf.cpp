@@ -63,3 +63,9 @@ void print_hex( qword value ) {
   }
   print_string( hex_string );
 }
+
+void log_error( const char* s ) {
+  print_string( "Kernel error: " );
+  print_string( s );
+  print_char( '\n' );
+}
