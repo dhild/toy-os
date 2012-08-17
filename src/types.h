@@ -5,6 +5,10 @@ typedef unsigned char byte;
 typedef unsigned short word;
 typedef unsigned int dword;
 typedef unsigned long qword;
+typedef signed char sbyte;
+typedef signed short sword;
+typedef signed int sdword;
+typedef signed long sqword;
 
 #define NULL 0
 
