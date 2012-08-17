@@ -1,9 +1,10 @@
 OUTPUT_FORMAT(elf64-x86-64)
 ENTRY(loader)
+PHYS_BASE = 0x100000;
 VIRTUAL_BASE = 0xC00000000000;
 SECTIONS
 {
-	. = 0x100000;
+	. = PHYS_BASE;
 
         kernel_begin_addr = .;
 
@@ -11,41 +12,47 @@ SECTIONS
 	{
 		*multiboot.o(.text*)
 		*paging.o(.text*)
+		. = ALIGN(4096);
 	}
 
 	. += VIRTUAL_BASE;
 
-	.text ALIGN(4096) : AT(ADDR(.text) - VIRTUAL_BASE)
+	.text : AT(ADDR(.text) - VIRTUAL_BASE)
 	{
 		*(.text*)
 		*(.gnu.linkonce.t*)
+		. = ALIGN(4096);
 	}
 
-	.rodata ALIGN(4096) : AT(ADDR(.rodata) - VIRTUAL_BASE)
-	{
-		*(.rodata*)
-		*(.gnu.linkonce.r*)
-	}
-
-	.data ALIGN(4096) : AT(ADDR(.data) - VIRTUAL_BASE)
+	.rodata : AT(ADDR(.rodata) - VIRTUAL_BASE)
 	{
 		start_ctors = .;
-		*(.ctor*)
+		*(SORT(.ctor*))
 		end_ctors = .;
 
 		start_dtors = .;
-		*(.dtor*)
+		*(SORT(.dtor*))
 		end_dtors = .;
 
-		*(.data*)
-		*(.gnu.linkonce.d*)
+		*(.rodata*)
+		*(.gnu.linkonce.r*)
+
+		. = ALIGN(4096);
 	}
 
-        end_of_data = . - 0xC00000000000;
-
-	.bss ALIGN(4096) :  AT(ADDR(.bss) - VIRTUAL_BASE)
+	.data : AT(ADDR(.data) - VIRTUAL_BASE)
 	{
-		*(.COMMON*)
+		*(.data*)
+		*(.gnu.linkonce.d*)
+
+		. = ALIGN(4096);
+	}
+
+        end_of_data = . - VIRTUAL_BASE;
+
+	.bss :  AT(ADDR(.bss) - VIRTUAL_BASE)
+	{
+		*(COMMON*)
 		*(.bss*)
 		*(.gnu.linkonce.b*)
 	}
@@ -56,5 +63,5 @@ SECTIONS
 		*(.eh_frame) /* You should discard this unless you're implementing runtime support for C++ exceptions. */
 	 }
 
-         end_of_kernel = . - 0xC00000000000;
+         end_of_kernel = . - VIRTUAL_BASE;
 }
