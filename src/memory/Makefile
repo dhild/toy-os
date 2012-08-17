@@ -1,5 +1,7 @@
 include $(BASEMAKE)
 
+CFLAGS += -I..
+
 OBJS = \
 	buddyAllocator.o \
 	stackAllocator.o \
