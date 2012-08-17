@@ -101,41 +101,28 @@ scroll_print:
 
 print_char:
 	push rbx
+	push r12
 
-	;; If we need to scroll, do so.
-	mov rdi, charSize
-	mov rax, [rdi]
-	xor rdx, rdx
-	mov rdi, width
-	mul qword [rdi]
-	mov rsi, rax
-	mov rdi, height
-	mul qword [rdi]
-	mov rdi, offset
-	cmp [rdi], rax
-	jle .noScroll
-	push rax
-	push rdx
-	push rsi
-	call scroll_print
-	pop rsi
-	pop rdx
-	pop rax
-.noScroll:
-	
 	mov rax, rdi
 
 	;; Newline
 	cmp al, 0x0A
 	jne .testTab
 
-	mov rdi, offset
-	mov rax, [rdi]
+	mov r12, offset
+	mov rax, [r12]
 	xor rdx, rdx
-	div rsi
+	mov r12, width
+	div qword [r12]
+	xor rdx, rdx
+	mov r12, charSize
+	div qword [r12]
 	add rax, 1
-	mul rsi
-	mov [rdi], rax
+	mul qword [r12]
+	mov r12, width
+	mul qword [r12]
+	mov r12, offset
+	mov [r12], rax
 	jmp .exit
 
 .testTab:
@@ -143,35 +130,48 @@ print_char:
 	cmp al, 0x09
 	jne .normalChar
 
-	mov rdi, tabsize
-	mov rcx, [rdi]
-	mov rdi, offset
-	mov rax, [rdi]
+	mov r12, offset
+	mov rax, [r12]
 	xor rdx, rdx
-	div rcx
+	mov r12, tabsize
+	div qword [r12]
 	add rax, 1
-	mul rcx
-	mov rdi, offset
-	mov [rdi], rax
+	mul qword [r12]
+	mov r12, offset
+	mov [r12], rax
 	jmp .exit
 
 .normalChar:
-	mov rdi, attribute
-	mov ah, [rdi]
+	mov r12, attribute
+	mov rbx, [r12]
+	mov ah, bl
 
-	mov rdi, BaseAddr
-	mov rdx, [rdi]
-	mov rdi, offset
-	add rdx, [rdi]
+	mov r12, BaseAddr
+	mov rdi, [r12]
+	mov r12, offset
+	add rdi, [r12]
 
-	mov [rdx], ax
+	mov [rdi], ax
 
-	mov rdi, offset
-	mov rdx, [rdi]
-	add rdx, 2
-	mov [rdi], rdx
+	inc qword [r12]
+	inc qword [r12]
 
 .exit:
+	;; If we need to scroll, do so.
+	mov r12, charSize
+	mov rax, [r12]
+	xor rdx, rdx
+	mov r12, width
+	mul qword [r12]
+	mov r12, height
+	mul qword [r12]
+	mov r12, offset
+	cmp [r12], rax
+	jle .noScroll
+	call scroll_print
+.noScroll:
+
+	pop r12
 	pop rbx
 	ret
 
