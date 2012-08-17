@@ -2,6 +2,7 @@ global loader:function  	; making entry point visible to linker
 extern kernel_begin_addr, end_of_data, end_of_kernel
 extern make_page_tables, PML4Tables
 extern kmain, setup_interrupts, setup_printing
+extern start_ctors, end_ctors, start_dtors, end_dtors
 
 section .text
 bits 32
@@ -110,9 +111,32 @@ Realm64:
 	mov rdi, mb_info
 	rep movsb
 
+	;; Run the C++ static constructors:
+	mov r12, start_ctors
+	mov r13, end_ctors
+.ctors_loop:
+	cmp r12, r13
+	je .ctors_done
+	call r12
+	add r12, 8
+	jmp .ctors_loop
+.ctors_done:
+	
 	mov rdi, mb_info
 	mov rax, kmain
 	call rax 		; Call the kernel proper
+
+	;; Run the C++ static destructors
+	mov r12, start_dtors
+	mov r13, end_dtors
+.dtors_loop:
+	cmp r12, r13
+	je .dtors_done
+	call r12
+	add r12, 8
+	jmp .dtors_loop
+.dtors_done:
+
 .halt:
 	cli
 	hlt			; Halt if we manage to return
