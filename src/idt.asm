@@ -38,6 +38,8 @@ section .text
 	;; void setup_interrupts();
 setup_interrupts:
 	;; Install the base interrupt handlers
+	push rbx
+
 %macro interrupt 2
 	;; Sets an interrupt descriptor
 	;; dword 0: (31:16) segment selector
@@ -90,10 +92,10 @@ setup_interrupts:
 	interrupt 18, machine_check_exception
 	interrupt 19, simd_floating_point_exception
 
-	xchg bx, bx
 	;; Enable the interrupts and return
 	mov rax, table.Pointer
 	lidt [rax]
 
 	sti
-	jmp r12
+	pop rbx
+	ret

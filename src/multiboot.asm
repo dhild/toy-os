@@ -79,7 +79,6 @@ loader:
 	jmp CodeSeg:Realm64	; Set the code segment and enter 64-bit long mode.; Use 64-bit.
 bits 64
 Realm64:
-	sti			; Clear the interrupt flag.
 	mov ax, DataSeg		; Set the A-register to the data descriptor.
 	mov ss, ax
 	mov ds, ax		; Set the data segment to the A-register.
@@ -87,17 +86,22 @@ Realm64:
 	mov fs, ax		; Set the F-segment to the A-register.
 	mov gs, ax		; Set the G-segment to the A-register.
 
+	;; Initialize the stack pointer where we want it.
+	;; Technically, this is dangerous, since if there's an exception
+	;; due to the stack, then we won't know until later when we enable
+	;; the interrupts.
+	mov rsp, stack.end
+
+	;; Sets up for printing. We do this before interrupts so that we
+	;; can print during the interrupt calls themselves.
 	xchg bx, bx
-	mov r12, .done_printing
 	mov rax, setup_printing
-	mov rbx, [rax]
-	jmp rax
-.done_printing:
-	xchg bx, bx
-	mov r12, .done_idt
+	call rax
+
+	;; Set up for the interrupts.
+	;; The call itself should also enable them.
 	mov rax, setup_interrupts
-	jmp rax
-.done_idt:
+	call rax
 
 	;; Store the boot information
 	mov rcx, (mb_info.end - mb_info)
@@ -105,9 +109,6 @@ Realm64:
 	mov esi, ebp
 	mov rdi, mb_info
 	rep movsb
-
-	;; Initialize the stack pointer where we want it
-	mov rsp, stack.end
 
 	mov rdi, mb_info
 	mov rax, kmain

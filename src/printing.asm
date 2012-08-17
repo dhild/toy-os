@@ -30,27 +30,7 @@ BaseAddr:
 section .text
 	
 setup_printing:
-	;; Prepares for printing.
-	;; Basically, clear_screen without any stack movement.
-	mov rsi, BaseAddr
-	mov rdi, [rsi]
-	mov rsi, width
-	mov rcx, [rsi]
-	mov rsi, height
-	mov rbx, [rsi]
-	mov rsi, charSize
-	mov rax, [rsi]
-	xor rdx, rdx
-	mul rcx
-	mul rbx
-	mov rcx, rax
-	xor rax, rax
-	rep stosb
-
-	mov rdi, offset
-	mov [rdi], rax
-
-	jmp r12
+	;; Prepares for printing. (Just clear the screen)
 
 clear_screen:
 	push rbx
