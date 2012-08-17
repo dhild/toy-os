@@ -5,6 +5,7 @@ bits 64
 section .text
 
 breakpoint_exception:
+	xchg bx, bx
 	call store_print_regs
 
 	mov rdi, message
