@@ -1,3 +1,8 @@
 1: Don't use nasm's debugging symbols in 64-bit mode.
    There seems to be no way to control that the relocation addresses
    are stored as 32-bit addresses, rather than the required 64-bit addresses.
+
+2: Use a canonical address for higher half.
+   See http://en.wikipedia.org/wiki/X86-64#Canonical_form_addresses for an
+   explanation, but basically for forward compatibility reasons, 64-bit
+   addresses are sign-extended.
