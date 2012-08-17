@@ -25,8 +25,5 @@ extern "C" {
 void print_dec( qword value );
 void print_hex( qword value );
 
-int ksprintf( char* str, const char* format, ... );
-int kprintf( const char* format, ... );
-
 #endif	/* _KPRINTF_H */
 
