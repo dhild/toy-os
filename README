@@ -1,0 +1,6 @@
+Higher half kernel code is not working yet.
+- The code properly loads to the high virtual address.
+- Paging (or at least the first few needed pages) is working correctly.
+- The code seems to fail upon access to these higher pages, however.
+- Boch's introspection reveals that the pages seem to be correctly
+  set up as well.
