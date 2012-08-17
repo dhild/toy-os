@@ -92,7 +92,8 @@ setup_interrupts:
 
 	xchg bx, bx
 	;; Enable the interrupts and return
-	lidt [table.Pointer]
+	mov rax, table.Pointer
+	lidt [rax]
 
 	sti
 	jmp r12
