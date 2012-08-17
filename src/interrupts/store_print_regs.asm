@@ -109,22 +109,19 @@ store_print_regs:
 	mov [r12], rax
 %endmacro
 
-	push rbp
-	mov rbp, rsp
-	add rbp, 16
-	store_reg interrupt_regs.ss, [rbp+40]
-	store_reg interrupt_regs.rsp, [rbp+32]
-	store_reg interrupt_regs.rflags, [rbp+24]
-	store_reg interrupt_regs.cs, [rbp+16]
-	store_reg interrupt_regs.rip, [rbp+8]
-	store_reg interrupt_regs.error, [rbp+0]
-	pop rbp
-
+	store_reg interrupt_regs.ss, [rsp+48]
+	store_reg interrupt_regs.rsp, [rsp+40]
+	store_reg interrupt_regs.rflags, [rsp+32]
+	store_reg interrupt_regs.cs, [rsp+24]
+	store_reg interrupt_regs.rip, [rsp+16]
+	store_reg interrupt_regs.error, [rsp+8]
+	
 %macro print 2
 	mov rdi, %1
 	mov r12, print_string
 	call r12
-	mov rdi, %2
+	mov r12, %2
+	mov rdi, [r12]
 	mov r12, print_hex
 	call r12
 %endmacro
@@ -159,7 +156,7 @@ store_print_regs:
 
 section .rodata
 msg_error_code:
-	db 'Error code: ',0xA,0
+	db 'Error code: ',0
 msg_rax:
 	db 0xA,'Registers:',0xA,'rax: ',0
 msg_rbx:
