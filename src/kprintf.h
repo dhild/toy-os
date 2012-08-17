@@ -9,28 +9,24 @@
 #define	_KPRINTF_H
 
 #include "types.h"
+#include "kstdarg.h"
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
-
-    void setup_printing( dword vbe_control_info,
-                         dword vbe_mode_info,
-                         dword vbe_mode,
-                         dword vbe_interface_seg,
-                         dword vbe_interface_off,
-                         dword vbe_interface_len );
-
-    void print_char( const char c );
-    void print_dec( qword value );
-    void print_hex( qword value );
-    void print_string( const char* str );
-    void print_special( const char* str, void* special );
-
-
-#ifdef	__cplusplus
+  // These functions are implemented in assembly.
+  // See printing.asm
+  void print_char( const char c );
+  void print_string( const char* s );
+#ifdef __cplusplus
 }
 #endif
+
+void print_dec( qword value );
+void print_hex( qword value );
+
+int ksprintf( char* str, const char* format, ... );
+int kprintf( const char* format, ... );
 
 #endif	/* _KPRINTF_H */
 
