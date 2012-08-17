@@ -9,7 +9,6 @@
 #define	_KPRINTF_H
 
 #include "types.h"
-#include "kstdarg.h"
 
 #ifdef __cplusplus
 extern "C" {
