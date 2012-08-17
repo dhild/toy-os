@@ -13,12 +13,12 @@ KERNEL_SCRIPT_FILE = linkerScript
 KERNEL_MAP_FILE = kernel.map
 
 INTERRUPTS_ARCHIVE = interrupts/interrupts.a
+MEMORY_ARCHIVE = memory/memory.a
 
-SUBDIRS = interrupts
+SUBDIRS = interrupts memory
 
 .PHONY: all
 .PHONY: $(SUBDIRS)
-.PHONY: $(INTERRUPTS_ARCHIVE)
 .PHONY: clean
 
 all: $(KERNEL_FILE)
@@ -33,15 +33,21 @@ kmain.o: kmain.cpp types.h main.h kprintf.h multiboot.h
 interrupts:
 	make -C interrupts BASEMAKE='$(BASEMAKE)'
 
+memory:
+	make -C memory BASEMAKE='$(BASEMAKE)'
+
 $(INTERRUPTS_ARCHIVE): interrupts
+$(MEMORY_ARCHIVE): memory
 
 $(KERNEL_FILE): $(OBJS)
 $(KERNEL_FILE): $(INTERRUPTS_ARCHIVE)
+$(KERNEL_FILE): $(MEMORY_ARCHIVE)
 $(KERNEL_FILE): $(KERNEL_SCRIPT_FILE)
 $(KERNEL_FILE):
-	$(LD) $(LDFLAGS) -T $(KERNEL_SCRIPT_FILE) -Map $(KERNEL_MAP_FILE) -o $(KERNEL_FILE) $(OBJS) $(INTERRUPTS_ARCHIVE)
+	$(LD) $(LDFLAGS) -T $(KERNEL_SCRIPT_FILE) -Map $(KERNEL_MAP_FILE) -o $(KERNEL_FILE) $(OBJS) $(INTERRUPTS_ARCHIVE) $(MEMORY_ARCHIVE)
 
 clean:
 	rm -frv $(OBJS) $(KERNEL_FILE) $(KERNEL_MAP_FILE)
 	make -C interrupts clean BASEMAKE='$(BASEMAKE)'
+	make -C memory clean BASEMAKE='$(BASEMAKE)'
 
