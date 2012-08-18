@@ -23,7 +23,7 @@ extern "C" {
 
 void print_dec( qword value );
 void print_hex( qword value );
-void print_error( const char* s );
+void log_error( const char* s );
 
 #endif	/* _KPRINTF_H */
 
