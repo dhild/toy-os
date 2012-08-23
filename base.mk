@@ -1,10 +1,9 @@
 SHELL = /bin/sh
-BINDIR=/home/dhild/cross/bin
-CC = $(BINDIR)/x86_64-elf-gcc
-CXX = $(BINDIR)/x86_64-elf-g++
-LD = $(BINDIR)/x86_64-elf-ld
-AR = $(BINDIR)/x86_64-elf-ar
-RANLIB = $(BINDIR)/x86_64-elf-ranlib
+CC = x86_64-elf-gcc
+CXX = x86_64-elf-g++
+LD = x86_64-elf-ld
+AR = x86_64-elf-ar
+RANLIB = x86_64-elf-ranlib
 NASM = nasm
 SUDO = sudo
 MOUNT = $(SUDO) mount
