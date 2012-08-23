@@ -17,12 +17,15 @@ extern "C" {
   // See printing.asm
   void print_char( const char c );
   void print_string( const char* s );
+
+  // These functions are called from assembly.
+  void print_dec( qword value );
+  void print_hex( qword value );
+
 #ifdef __cplusplus
 }
 #endif
 
-void print_dec( qword value );
-void print_hex( qword value );
 void log_error( const char* s );
 
 #endif	/* _KPRINTF_H */

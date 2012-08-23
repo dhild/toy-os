@@ -2,6 +2,7 @@ global setup_printing
 global clear_screen:function
 global scroll_print:function
 global print_string:function
+global print_char:function
 section .data
 bits 64
 
