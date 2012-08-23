@@ -1,0 +1,28 @@
+Heads: 16
+Sectors: 63
+Cylinders: 140
+total sectors: 141120
+sector = 512 bytes
+partition table is 1048576 bytes
+part1: start sector 2048, 69536 blocks
+
+mke2fs 1.42 (29-Nov-2011)
+Discarding device blocks: done                            
+Filesystem label=
+OS type: Linux
+Block size=1024 (log=0)
+Fragment size=1024 (log=0)
+Stride=0 blocks, Stripe width=0 blocks
+17424 inodes, 69536 blocks
+3476 blocks (5.00%) reserved for the super user
+First data block=1
+Maximum filesystem blocks=67371008
+9 block groups
+8192 blocks per group, 8192 fragments per group
+1936 inodes per group
+Superblock backups stored on blocks: 
+	8193, 24577, 40961, 57345
+
+Allocating group tables: done                            
+Writing inode tables: done                            
+Writing superblocks and filesystem accounting information: done
