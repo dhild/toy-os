@@ -4,7 +4,6 @@ CFLAGS += -I..
 
 OBJS = \
 	buddyAllocator.o \
-	stackAllocator.o \
 	paging.o
 
 MEMORY_ARCHIVE = memory.a
