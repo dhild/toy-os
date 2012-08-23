@@ -21,16 +21,11 @@ $(SRCDIR):
 hd.img: hd.img.xz
 	xz -dfk hd.img.xz
 
-hd: hd.img
-	mkdir -pv hd
-	$(MOUNT) -o sync,loop,offset=32256 hd.img hd
-
-umount:
-	$(UMOUNT) hd
-	rmdir -v hd
-
-images: $(SRCDIR) hd.img hd
-	$(SUDO) cp -v src/kernel.elf hd/kernel.elf
+images: $(SRCDIR) hd.img
+	dd if=hd.img of=part1.img bs=1024 skip=1024 count=69536
+	debugfs -w -f copy_image.debugfs
+	dd if=part1.img of=hd.img bs=1024 seek=1024 count=69536
+	rm -frv part1.img
 
 compressed-img:
 	xz -zfk hd.img
@@ -39,4 +34,4 @@ clean:
 	make -C $(SRCDIR) clean BASEMAKE='$(BASEMAKE)'
 
 image-clean: compressed-img clean
-	rm -frv hd hd.img
+	rm -frv hd.img
