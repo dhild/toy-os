@@ -18,28 +18,17 @@ CXXFLAGS = $(CFLAGS) -fno-rtti
 NASMFLAGS = -f elf64 -Werror
 LDFLAGS = -melf_x86_64 -nostdlib -nodefaultlibs -z max-page-size=0x1000
 
+all: .depcheck
+
 .SUFFIXES:
 .SUFFIXES: .c .cpp .asm .o .d
 
-%.d: %.cpp
-	@set -e; rm -f $@; \
-	$(CXX) -MM $(CPPFLAGS) $< > $@.$$$$; \
-	sed 's,\($*\)\.o[ :]*,\1.o $@
-
-%.d: %.c
-	@set -e; rm -f $@; \
-	$(CC) -MM $(CPPFLAGS) $< > $@.$$$$; \
-	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
-	rm -f $@.$$$$ : ,g' < $@.$$$$ > $@; \
-	rm -f $@.$$$$
-
-%.d: %.asm
-
 %.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -MMD -MP -MF $@.d -c -o $@ $<
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) -MMD -MP -MF $@.d -c -o $@ $<
 
 %.o: %.asm
+	$(NASM) $(NASMFLAGS) -M $< > $@.d
 	$(NASM) $(NASMFLAGS) -o $@ $<

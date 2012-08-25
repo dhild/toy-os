@@ -23,18 +23,11 @@ SUBDIRS = interrupts memory
 
 all: $(KERNEL_FILE)
 
-multiboot.o: multiboot.asm $(KERNEL_SCRIPT_FILE)
-paging.o: paging.asm multiboot.asm
-idt.o: idt.asm
-printing.o: printing.asm multiboot.asm
-kprintf.o: kprintf.cpp types.h main.h kprintf.h
-kmain.o: kmain.cpp types.h main.h kprintf.h multiboot.h
-
 interrupts:
-	make -C interrupts BASEMAKE='$(BASEMAKE)'
+	make -C interrupts BASEMAKE='$(BASEMAKE)' DEPCHECK='$(DEPCHECK)'
 
 memory:
-	make -C memory BASEMAKE='$(BASEMAKE)'
+	make -C memory BASEMAKE='$(BASEMAKE)' DEPCHECK='$(DEPCHECK)'
 
 $(INTERRUPTS_ARCHIVE): interrupts
 $(MEMORY_ARCHIVE): memory
@@ -48,6 +41,7 @@ $(KERNEL_FILE):
 
 clean:
 	rm -frv $(OBJS) $(KERNEL_FILE) $(KERNEL_MAP_FILE)
-	make -C interrupts clean BASEMAKE='$(BASEMAKE)'
-	make -C memory clean BASEMAKE='$(BASEMAKE)'
+	make -C interrupts clean BASEMAKE='$(BASEMAKE)' DEPCHECK='$(DEPCHECK)'
+	make -C memory clean BASEMAKE='$(BASEMAKE)' DEPCHECK='$(DEPCHECK)'
 
+include $(DEPCHECK)
