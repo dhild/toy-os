@@ -10,6 +10,9 @@ typedef signed short sword;
 typedef signed int sdword;
 typedef signed long sqword;
 
+typedef unsigned long size_t;
+typedef signed long ssize_t;
+
 #define NULL 0
 
 #endif // _MEM_H_
