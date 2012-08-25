@@ -3,8 +3,10 @@ include $(BASEMAKE)
 CFLAGS += -I..
 
 OBJS = \
+	memory.o \
 	buddyAllocator.o \
-	paging.o
+	paging.o \
+	pagingInternals.o
 
 MEMORY_ARCHIVE = memory.a
 
