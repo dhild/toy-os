@@ -10,60 +10,32 @@
 
 namespace buddy {
 
-  typedef sbyte block_order_t;
-
   enum BlockUsage {
     FREE,
     INUSE,
     SPLIT
   };
 
-  class Block {
+  class BuddyAllocator {
   private:
-    Block(const Block&);
-    static qword* blockSizes;
-    static bool initialized;
-    static void initialize();
+    BuddyAllocator(const BuddyAllocator&);
 
-    void * const location;
-    const block_order_t order;
-    BlockUsage usage;
+    void * const mem_start;
+    const size_t mem_size;
+    BlockUsage* blocks[BUDDY_LEVELS];
+    size_t counts[BUDDY_LEVELS];
 
+    bool checkMerges();
+    void split(const qword level, const size_t index);
+    void * getLocation(const size_t level, const size_t index);
   public:
-    Block(void*, const block_order_t);
-    ~Block();
-    void setUsed(const bool inUse) { this->usage = inUse ? INUSE : FREE; }
-    bool isUsed() { return (this->usage != FREE); }
-    BlockUsage getUsage() { return usage; }
-    void* getLocation() { return location; }
-    block_order_t getOrder() { return order; }
-    bool isMaxOrder() { return (order + 1) == BUDDY_LEVELS; }
+    BuddyAllocator(void * location, const size_t size);
+    ~BuddyAllocator();
 
-    void split(Block*, Block*);
+    void * allocate(const size_t);
+    void free(void * const location);
 
-    qword getSize();
-    static qword getSize(const block_order_t);
-    static qword maxSize() { return getSize(BUDDY_LEVELS - 1); }
-
-    void* operator new(qword, void*);
-    void operator delete(void*);
-  };
-
-  class BlockManager {
-  private:
-    void* const start;
-    const qword size;
-    
-    Block* blocks[BUDDY_LEVELS];
-    qword counts[BUDDY_LEVELS];
-
-    void checkMerge(Block*);
-  public:
-    BlockManager(void* const location, const qword size);
-    ~BlockManager();
-
-    void* allocate(qword);
-    void free(void*);
+    void* operator new(size_t, void*);
   };
 
 }

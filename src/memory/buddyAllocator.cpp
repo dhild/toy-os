@@ -3,6 +3,7 @@
 
 using namespace buddy;
 
+/*
 BlockManager::BlockManager(void* const loc, const qword length) : start(loc), size(length) {
   // First, allocate enough arrays to store our blocks.
   qword remaining = size;
@@ -150,3 +151,4 @@ qword Block::getSize(const block_order_t s) {
   }
   return blockSizes[s];
 }
+*/
