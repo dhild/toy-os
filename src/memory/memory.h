@@ -4,7 +4,7 @@
 #include "types.h"
 
 // Requests a given size of paged virtual memory.
-void* request_memory(qword size);
-void release_memory(const void* mem);
+void* allocate(const size_t);
+void free(const void*);
 
 #endif
