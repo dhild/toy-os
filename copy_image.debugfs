@@ -1,3 +1,4 @@
 open -w part1.img
+rm kernel.elf
 write src/kernel.elf kernel.elf
 close -a
