@@ -5,4 +5,8 @@
 	echo "endif" >>.dep.inc;
 .dep.inc: .depcheck
 
+clean: .depclean
+.depclean:
+	rm -fr .dep.inc $(wildcard $(addsuffix .d, ${OBJS}))
+
 include .dep.inc
