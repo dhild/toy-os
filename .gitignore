@@ -3,4 +3,6 @@ hd.img
 hd/
 bochs.log
 *.o
+*.o.d
+*.dep.inc
 *~
