@@ -26,7 +26,7 @@ images: $(SRCDIR) hd.img
 	dd if=hd.img of=part1.img bs=1024 skip=1024 count=69536
 	debugfs -w -f copy_image.debugfs
 	dd if=part1.img of=hd.img bs=1024 seek=1024 count=69536
-	rm -frv part1.img
+	rm -fr part1.img
 
 compressed-img:
 	xz -zfk hd.img
@@ -35,6 +35,6 @@ clean:
 	make -C $(SRCDIR) clean BASEMAKE='$(BASEMAKE)' DEPCHECK='$(DEPCHECK)'
 
 image-clean: compressed-img clean
-	rm -frv hd.img
+	rm -fr hd.img
 
 include $(DEPCHECK)

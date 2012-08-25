@@ -15,6 +15,6 @@ $(MEMORY_ARCHIVE): $(OBJS)
 	$(RANLIB) $(MEMORY_ARCHIVE)
 
 clean:
-	rm -frv $(OBJS) $(MEMORY_ARCHIVE)
+	rm -fr $(OBJS) $(MEMORY_ARCHIVE)
 
 include $(DEPCHECK)
