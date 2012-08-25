@@ -1,5 +1,4 @@
 global make_page_tables:function
-global PML4Tables
 
 section .text
 bits 32
@@ -46,6 +45,7 @@ make_page_tables:
 
 	ret
 
+global PML4Tables, PDPTIdentity, PDPTKernel
 align 4096
 PML4Tables:
 	times 4096 db 0
