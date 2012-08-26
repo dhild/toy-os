@@ -34,6 +34,12 @@ namespace paging {
     PTE entry[512];
   };
 
+  bool setupPageTable(PT * tables, const void * address, const qword flags);
+  bool setupPageDirectory(PDT * tables, const void * address, const qword flags);
+  bool setupPageDirectory(PDT * tables, const PT * address, const qword flags);
+  bool setupPageDirectoryPointer(PDPT * tables, const void * address, const qword flags);
+  bool setupPageDirectoryPointer(PDPT * tables, const PDT * address, const qword flags);
+
   PML4T * getPML4T();
   PDPT * getPDPTLow();
   PDPT * getPDPTHigh();
@@ -43,12 +49,20 @@ namespace paging {
   void * getMemoryEnd();
   size_t getMemorySize();
 
+  bool setPTE(PTE * page, const void * address, const qword flags);
+  bool setPDTETable(PDTE * page, const void * address, const qword flags);
+  bool setPDTEPage(PDTE * page, const void * address, const qword flags);
+  bool setPDPTETable(PDPTE * page, const void * address, const qword flags);
+  bool setPDPTEPage(PDPTE * page, const void * address, const qword flags);
+  bool setPML4E(PML4E * page, const void * address, const qword flags);
+
 }
 
 // How many bits are used in each address?
 #define PAGING_ADDRESS_BITS 48
 // These are based on PAGING_ADDRESS_BITS.
 // They all MUST make sense together!
+#define PAGING_CANNONICAL_BITS     (0xFFFF000000000000)
 #define PAGING_GLOBAL_RESERVED     (0x000F000000000000)
 #define PAGING_PTE_ADDRESS         (0x0000FFFFFFFFF000)
 #define PAGING_PDE_PAGE_ADDRESS    (0x0000FFFFFFE00000)

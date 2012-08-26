@@ -8,6 +8,7 @@
 
 using namespace paging;
 
+/* The semi-constants. */
 extern "C" size_t start_of_kernel;
 extern "C" size_t end_of_kernel;
 extern "C" mb_header mb_info;
@@ -26,8 +27,6 @@ bool initialized = false;
 void setupPagingInternals() {
   if (initialized)
     return;
-
-  
 
   // Figure out where in memory we need to be.
   void * mem_start = (void *)end_of_kernel;
@@ -64,3 +63,124 @@ PT * getPTStart() { return PT_start; }
 void * getMemoryStart() { return memory_start; }
 void * getMemoryEnd() { return memory_end; }
 size_t getMemorySize() { return memory_size; }
+
+
+bool setupPageTable(PT * tables, const void * address, const qword flags) {
+  for (qword i = 0; i < 512; i++) {
+    void * addr = (void *)((qword)address + (i * 4096));
+    if (!setPTE(tables->entry[i], addr, flags))
+      return false;
+  }
+}
+
+bool setupPageDirectory(PDT * tables, const void * address, const qword flags) {
+  for (qword i = 0; i < 512; i++) {
+    void * addr = (void *)((qword)address + (i * 2 * 1024 * 1024));
+    if (!setPDTE(tables->entry[i], addr, flags));
+      return false;
+  }
+}
+
+bool setupPageDirectory(PDT * tables, const PT * address, const qword flags) {
+  for (qword i = 0; i < 512; i++) {
+    void * addr = (void *)((qword)address + (i * 4096));
+    if (!setPDTE(tables->entry[i], addr, flags));
+      return false;
+  }
+}
+
+bool setupPageDirectoryPointer(PDPT * tables, const void * address, const qword flags) {
+  for (qword i = 0; i < 512; i++) {
+    void * addr = (void *)((qword)address + (i * 4096));
+    if (!setPDPTE(tables->entry[i], addr, flags));
+      return false;
+  }
+}
+
+bool setupPageDirectoryPointer(PDPT * tables, const PDT * address, const qword flags) {
+  for (qword i = 0; i < 512; i++) {
+    void * addr = (void *)((qword)address + (i * 4096));
+    if (!setPDPTE(tables->entry[i], addr, flags));
+      return false;
+  }
+}
+
+
+bool isCanonicalAddress(const void * address) {
+  if (address < PAGING_PTE_ADDRESS)
+    return true;
+
+  return ((address & PAGING_CANNONICAL_BITS) == PAGING_CANNONICAL_BITS);
+}
+
+bool setPTE(PTE * page, const void * address, const qword flags) {
+  if (!isCanonical(address)) {
+    log_error("Attempting to set page entry to a non-cannonical address!");
+    return false;
+  }
+  if ((address % 4096) != 0) {
+    log_error("Attempting to set a page entry to an unaligned address!");
+    return false;
+  }
+  *page = (address | flags) & (!PAGING_PTE_FLAGS_RESERVED);
+}
+
+bool setPDTE(PDTE * page, const PT * address, const qword flags) {
+  if (!isCanonical(address)) {
+    log_error("Attempting to set page directory entry to a non-cannonical address!");
+    return false;
+  }
+  if ((address % 4096) != 0) {
+    log_error("Attempting to set a page directory entry to an unaligned address!");
+    return false;
+  }
+  *page = (address | flags) & (!PAGING_PDTE_FLAGS_RESERVED);
+}
+
+bool setPDTE(PDTE * page, const void * address, const qword flags) {
+  if (!isCanonical(address)) {
+    log_error("Attempting to set page directory entry to a non-cannonical address!");
+    return false;
+  }
+  if ((address % (2 * 1024 * 1024)) != 0) {
+    log_error("Attempting to set a page directory entry to an unaligned address!");
+    return false;
+  }
+  *page = (address | flags) & (!PAGING_PDTE_FLAGS_RESERVED);
+}
+
+bool setPDPTE(PDPTE * page, const PDT * address, const qword flags) {
+  if (!isCanonical(address)) {
+    log_error("Attempting to set page directory pointer entry to a non-cannonical address!");
+    return false;
+  }
+  if ((address % 4096) != 0) {
+    log_error("Attempting to set a page directory pointer entry to an unaligned address!");
+    return false;
+  }
+  *page = (address | flags) & (!PAGING_PDPTE_FLAGS_RESERVED);
+}
+
+bool setPDPTE(PDPTE * page, const void * address, const qword flags) {
+  if (!isCanonical(address)) {
+    log_error("Attempting to set page directory pointer entry to a non-cannonical address!");
+    return false;
+  }
+  if ((address % (1024 * 1024 * 1024)) != 0) {
+    log_error("Attempting to set a page directory pointer entry to an unaligned address!");
+    return false;
+  }
+  *page = (address | flags) & (!PAGING_PDPTE_FLAGS_RESERVED);
+}
+
+bool setPML4E(PML4E * page, const void * address, const qword flags) {
+  if (!isCanonical(address)) {
+    log_error("Attempting to set page level 4 entry to a non-cannonical address!");
+    return false;
+  }
+  if ((address % 4096) != 0) {
+    log_error("Attempting to set a page level 4 entry to an unaligned address!");
+    return false;
+  }
+  *page = (address | flags) & (!PAGING_PML4E_FLAGS_RESERVED);
+}

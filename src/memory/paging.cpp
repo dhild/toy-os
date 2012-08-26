@@ -21,7 +21,8 @@ void paging::initialize() {
 #ifdef PAGING_USE_BUDDY_ALLOCATOR
   void * loc = (void *)((size_t)getMemoryStart() + sizeof(buddy::BuddyAllocator));
   allocator =
-    new(getMemoryStart()) buddy::BuddyAllocator(loc, getMemorySize() - sizeof(buddy::BuddyAllocator));
+    new(getMemoryStart())
+    buddy::BuddyAllocator(loc, getMemorySize() - sizeof(buddy::BuddyAllocator));
 #endif
 
   initialized = true;
