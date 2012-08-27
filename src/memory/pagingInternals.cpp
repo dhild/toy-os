@@ -11,7 +11,6 @@ using namespace paging;
 /* The semi-constants. */
 extern "C" size_t start_of_kernel;
 extern "C" size_t end_of_kernel;
-extern "C" mb_header mb_info;
 
 extern "C" PML4T * PML4Tables;
 extern "C" PDPT * PDPTIdentity;

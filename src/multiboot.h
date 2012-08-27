@@ -3,11 +3,35 @@
 
 #include "types.h"
 
+struct mods_info {
+  dword mod_start;
+  dword mod_end;
+  dword string;
+  dword reserved;
+};
+
 struct elf_info {
-  dword num;
   dword size;
-  dword addr;
-  dword shndx;
+  dword base_addr;
+  dword length;
+  dword type;
+};
+
+struct mmap_info {
+  dword size;
+  dword base_addr;
+  dword length;
+  dword type;
+};
+
+struct drives_info {
+  dword size;
+  dword drive_number;
+  dword drive_mode;
+  dword drive_cylinders;
+  dword drive_heads;
+  dword drive_sectors;
+  dword drive_ports;
 };
 
 #define MB_FLAGS_MEM_INFO         0x00000001
@@ -60,5 +84,7 @@ struct mb_header {
   dword vbe_interface_off;    // flags[11]
   dword vbe_interface_len;    // flags[11]
 };
+
+extern mb_header * mb_info;
 
 #endif // _MULTIBOOT_H_
