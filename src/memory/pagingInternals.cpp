@@ -91,44 +91,54 @@ PT * getPT(const void * linearAddress) {
   return pdt->entry[index];
 }
 
-bool setupPageTable(PT * tables, const void * address, const qword flags) {
+bool setupPageTable(PT * tables, void * address, const qword flags, const bool increment = true) {
+  bool result = true;
   for (qword i = 0; i < 512; i++) {
-    void * addr = (void *)((qword)address + (i * 4096));
-    if (!setPTE(tables->entry[i], addr, flags))
-      return false;
+    if (increment)
+      address = (void *)((qword)address + 4096);
+    result = result & setPTE(tables->entry[i], address, flags);
   }
+  return result;
 }
 
-bool setupPageDirectory(PDT * tables, const void * address, const qword flags) {
+bool setupPageDirectory(PDT * tables, void * address, const qword flags, const bool increment = true) {
+  bool result = true;
   for (qword i = 0; i < 512; i++) {
-    void * addr = (void *)((qword)address + (i * 2 * 1024 * 1024));
-    if (!setPDTE(tables->entry[i], addr, flags));
-      return false;
+    if (increment)
+      address = (void *)((qword)address + (2 * 1024 * 1024));
+    result = result & setPDTE(tables->entry[i], address, flags);
   }
+  return result;
 }
 
-bool setupPageDirectory(PDT * tables, const PT * address, const qword flags) {
+bool setupPageDirectory(PDT * tables, PT * address, const qword flags, const bool increment = true) {
+  bool result = true;
   for (qword i = 0; i < 512; i++) {
-    void * addr = (void *)((qword)address + (i * 4096));
-    if (!setPDTE(tables->entry[i], addr, flags));
-      return false;
+    if (increment)
+      address = (PT *)((qword)address + 4096);
+    result = result & setPDTE(tables->entry[i], address, flags);
   }
+  return result;
 }
 
-bool setupPageDirectoryPointer(PDPT * tables, const void * address, const qword flags) {
+bool setupPageDirectoryPointer(PDPT * tables, void * address, const qword flags, const bool increment = true) {
+  bool result = true;
   for (qword i = 0; i < 512; i++) {
-    void * addr = (void *)((qword)address + (i * 4096));
-    if (!setPDPTE(tables->entry[i], addr, flags));
-      return false;
+    if (increment)
+      address = (void *)((qword)address + (1024 * 1024 * 1024));
+    result = result & setPDPTE(tables->entry[i], address, flags);
   }
+  return result;
 }
 
-bool setupPageDirectoryPointer(PDPT * tables, const PDT * address, const qword flags) {
+bool setupPageDirectoryPointer(PDPT * tables, PDT * address, const qword flags, const bool increment = true) {
+  bool result = true;
   for (qword i = 0; i < 512; i++) {
-    void * addr = (void *)((qword)address + (i * 4096));
-    if (!setPDPTE(tables->entry[i], addr, flags));
-      return false;
+    if (increment)
+      address = (PDT *)((qword)address + 4096);
+    result = result & setPDPTE(tables->entry[i], address, flags);
   }
+  return result;
 }
 
 

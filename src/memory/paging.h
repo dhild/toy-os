@@ -34,11 +34,11 @@ namespace paging {
     PTE entry[512];
   };
 
-  bool setupPageTable(PT * tables, const void * address, const qword flags);
-  bool setupPageDirectory(PDT * tables, const void * address, const qword flags);
-  bool setupPageDirectory(PDT * tables, const PT * address, const qword flags);
-  bool setupPageDirectoryPointer(PDPT * tables, const void * address, const qword flags);
-  bool setupPageDirectoryPointer(PDPT * tables, const PDT * address, const qword flags);
+  bool setupPageTable(PT * tables, void * address, const qword flags, const bool increment = true);
+  bool setupPageDirectory(PDT * tables, void * address, const qword flags, const bool increment = true);
+  bool setupPageDirectory(PDT * tables, PT * address, const qword flags, const bool increment = true);
+  bool setupPageDirectoryPointer(PDPT * tables, void * address, const qword flags, const bool increment = true);
+  bool setupPageDirectoryPointer(PDPT * tables, PDT * address, const qword flags, const bool increment = true);
 
   PML4T * getPML4T();
   PDPT * getPDPTLow();
