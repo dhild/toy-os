@@ -16,13 +16,16 @@ namespace paging {
 
   void setupPagingInternals();
 
-  typedef qword PML4TE;
+  bool isPhysicalPageUsed(const void * physicalAddress);
+  void setPhysicalPageUsed(const void * physicalAddress, const bool used = true);
+
+  typedef qword PML4E;
   typedef qword PDPTE;
   typedef qword PDTE;
   typedef qword PTE;
 
   struct PML4T {
-    PML4TE entry[512];
+    PML4E entry[512];
   };
   struct PDPT {
     PDPTE entry[512];
@@ -50,10 +53,10 @@ namespace paging {
   size_t getMemorySize();
 
   bool setPTE(PTE * page, const void * address, const qword flags);
-  bool setPDTETable(PDTE * page, const void * address, const qword flags);
-  bool setPDTEPage(PDTE * page, const void * address, const qword flags);
-  bool setPDPTETable(PDPTE * page, const void * address, const qword flags);
-  bool setPDPTEPage(PDPTE * page, const void * address, const qword flags);
+  bool setPDTE(PDTE * page, const void * address, const qword flags);
+  bool setPDTE(PDTE * page, const PT * address, const qword flags);
+  bool setPDPTE(PDPTE * page, const void * address, const qword flags);
+  bool setPDPTE(PDPTE * page, const PDT * address, const qword flags);
   bool setPML4E(PML4E * page, const void * address, const qword flags);
 
 }
@@ -62,8 +65,8 @@ namespace paging {
 #define PAGING_ADDRESS_BITS 48
 // These are based on PAGING_ADDRESS_BITS.
 // They all MUST make sense together!
-#define PAGING_CANNONICAL_BITS     (0xFFFF000000000000)
 #define PAGING_GLOBAL_RESERVED     (0x000F000000000000)
+#define PAGING_CANNONICAL_BITS     (0xFFFF000000000000)
 #define PAGING_PTE_ADDRESS         (0x0000FFFFFFFFF000)
 #define PAGING_PDE_PAGE_ADDRESS    (0x0000FFFFFFE00000)
 #define PAGING_PDE_TABLE_ADDRESS   (0x0000FFFFFFFFF000)
