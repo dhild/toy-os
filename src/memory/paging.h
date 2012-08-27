@@ -43,8 +43,8 @@ namespace paging {
   PML4T * getPML4T();
   PDPT * getPDPTLow();
   PDPT * getPDPTHigh();
-  PDT * getPDTStart();
-  PT * getPTStart();
+  PDT * getPDT(const void * linearAddress);
+  PT * getPT(const void * linearAddress);
   void * getMemoryStart();
   void * getMemoryEnd();
   size_t getMemorySize();

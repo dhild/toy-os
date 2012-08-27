@@ -16,8 +16,6 @@ extern "C" mb_header mb_info;
 extern "C" PML4T * PML4Tables;
 extern "C" PDPT * PDPTIdentity;
 extern "C" PDPT * PDPTKernel;
-PDT * PDT_start;
-PT * PT_start;
 void * memory_start;
 void * memory_end;
 size_t memory_size;
@@ -58,12 +56,40 @@ void setupPagingInternals() {
 PML4T * getPML4E() { return PML4Tables; }
 PDPT * getPDPTLow() { return PDPTIdentity; }
 PDPT * getPDPTHigh() { return PDPTKernel; }
-PDT * getPDTStart() { return PDT_start; }
-PT * getPTStart() { return PT_start; }
 void * getMemoryStart() { return memory_start; }
 void * getMemoryEnd() { return memory_end; }
 size_t getMemorySize() { return memory_size; }
 
+PDT * getPDT(const void * linearAddress) {
+  PDPT * pdpt = NULL;
+  if (linearAddress < (512 * 1024 * 1024 * 1024))
+    pdpt = getPDPTLow();
+  else if (linearAddress > (- 512 * 1024 * 1024 * 1024))
+    pdpt = getPDPTHigh();
+  else {
+    log_error("Address is not below 512Gb or in kernel space!");
+    return NULL;
+  }
+  // Okay, now find the specific PDT entry:
+  qword index = (qword)linearAddress & ((1024 * 1024 * 1024) - 1);
+  index = index / (2 * 1024 * 1024);
+
+  return pdpt->entry[index];
+}
+
+PT * getPT(const void * linearAddress) {
+  PDT * pdt = getPDT(linearAddress);
+
+  if (pdt == NULL) {
+    log_error("Unable to find PDT entry!");
+    return NULL;
+  }
+
+  qword index = (qword)linearAddress & ((2 * 1024 * 1024) - 1);
+  index = index / 4096;
+
+  return pdt->entry[index];
+}
 
 bool setupPageTable(PT * tables, const void * address, const qword flags) {
   for (qword i = 0; i < 512; i++) {
