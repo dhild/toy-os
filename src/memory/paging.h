@@ -14,10 +14,14 @@ namespace paging {
 
   bool isCanonicalAddress(const void *);
 
+  void * highToLow(const void * linearAddress);
+  void * lowToHigh(const void * linearAddress);
+
   void setupPagingInternals();
 
   bool isPhysicalPageUsed(const void * physicalAddress);
-  void setPhysicalPageUsed(const void * physicalAddress, const bool used = true);
+  void * allocatePhysicalPage();
+  void freePhysicalPage(const void * physicalAddress);
 
   typedef qword PML4E;
   typedef qword PDPTE;
@@ -58,7 +62,6 @@ namespace paging {
   bool setPDPTE(PDPTE * page, const void * address, const qword flags);
   bool setPDPTE(PDPTE * page, const PDT * address, const qword flags);
   bool setPML4E(PML4E * page, const void * address, const qword flags);
-
 }
 
 // How many bits are used in each address?

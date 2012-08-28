@@ -60,6 +60,14 @@ void paging::setupPagingInternals() {
   initialized = true;
 }
 
+void * paging::lowToHigh(const void * linearAddress) {
+  return (void *)((qword)linearAddress + 0xFFFFC00000000000);
+}
+
+void * paging::highToLow(const void * linearAddress) {
+  return (void *)((qword)linearAddress - 0xFFFFC00000000000);
+}
+
 bool paging::isPhysicalPageUsed(const void * physicalAddress) {
   if (physicalAddress > memory_end) {
     log_error("Checking if physical page outside memory is used!");
@@ -68,12 +76,28 @@ bool paging::isPhysicalPageUsed(const void * physicalAddress) {
   if (physicalAddress < memory_start)
     return true;
 
-  const size_t index = (qword)physicalAddress / (4096 * 64);
-  const size_t bit = ((qword)physicalAddress - (index * 4096 * 64)) / 4096;
+  const size_t index = ((qword)physicalAddress - (qword)memory_start) / (4096 * 64);
+  const size_t bit = (((qword)physicalAddress - (qword)memory_start) - (index * 4096 * 64)) / 4096;
   return bitmap[index] & (1 << bit);
 }
 
-void paging::setPhysicalPageUsed(const void * physicalAddress, const bool used) {
+void * paging::allocatePhysicalPage() {
+  for (size_t i = 0; i < bitmap_length; i++) {
+    if (bitmap[i] != 0xFFFFFFFFFFFFFFFF) {
+      size_t bit = 0;
+      qword t = bitmap[i];
+      while (!(t & 1)) {
+	t = t >> 1;
+	bit++;
+      }
+      bitmap[i] = bitmap[i] & (1 << bit);
+      return (void *)((qword)memory_start + 4096 * (bit + (i * 64)));
+    }
+  }
+  return NULL;
+}
+
+void paging::freePhysicalPage(const void * physicalAddress) {
   if (physicalAddress > memory_end) {
     log_error("Attempting to set usage of physical page outside memory!");
     return;
@@ -83,14 +107,10 @@ void paging::setPhysicalPageUsed(const void * physicalAddress, const bool used) 
     return;
   }
 
-  const size_t index = (qword)physicalAddress / (4096 * 64);
-  const size_t bit = ((qword)physicalAddress - (index * 4096 * 64)) / 4096;
+  const size_t index = ((qword)physicalAddress - (qword)memory_start) / (4096 * 64);
+  const size_t bit = (((qword)physicalAddress - (qword)memory_start) - (index * 4096 * 64)) / 4096;
 
-  if (used) {
-    bitmap[index] = bitmap[index] | (1 << bit);
-  } else {
-    bitmap[index] = bitmap[index] & !(1 << bit);
-  }
+ bitmap[index] = bitmap[index] | (1 << bit);
 }
 
 PML4T * paging::getPML4T() { return PML4Tables; }
