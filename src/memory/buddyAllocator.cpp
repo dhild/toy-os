@@ -3,6 +3,44 @@
 
 using namespace buddy;
 
+BuddyAllocator::BuddyAllocator(void * loc, const size_t size) {
+
+}
+
+BuddyAllocator::~BuddyAllocator() {
+
+}
+
+void* BuddyAllocator::allocate(const size_t size) {
+  
+}
+  class BuddyAllocator {
+  private:
+    BuddyAllocator(const BuddyAllocator&);
+
+    void * const mem_start;
+    const size_t mem_size;
+    BlockUsage* blocks[BUDDY_LEVELS];
+    size_t counts[BUDDY_LEVELS];
+
+    bool checkMerges();
+    void split(const qword level, const size_t index);
+    void * getLocation(const size_t level, const size_t index);
+  public:
+    BuddyAllocator(void * location, const size_t size);
+    ~BuddyAllocator();
+
+    void * allocate(const size_t);
+    void free(void * const location);
+
+    void* operator new(size_t, void*);
+  };
+
+}
+
+#endif
+
+
 /*
 BlockManager::BlockManager(void* const loc, const qword length) : start(loc), size(length) {
   // First, allocate enough arrays to store our blocks.

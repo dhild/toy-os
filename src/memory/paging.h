@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-#define PAGING_USE_BUDDY_ALLOCATOR
+//#define PAGING_USE_BUDDY_ALLOCATOR
 
 namespace paging {
 

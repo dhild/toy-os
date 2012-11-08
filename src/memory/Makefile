@@ -4,6 +4,7 @@ CFLAGS += -I..
 
 OBJS = \
 	buddyAllocator.o \
+	buddyAllocatorTest.o \
 	paging.o \
 	pagingInternals.o
 

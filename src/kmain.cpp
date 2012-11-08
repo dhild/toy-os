@@ -1,6 +1,7 @@
 #include "main.h"
 #include "kprintf.h"
 #include "multiboot.h"
+#include "testFunctions.h"
 
 /** This is called after the initialization procedure is finished.
  *
@@ -16,6 +17,9 @@ extern "C" void kmain( struct mb_header *header ) {
 
   dword flags = header->flags;
   flags++;
+
+
+  testBuddyAllocator();
 }
 
 extern "C" void __cxa_pure_virtual()
