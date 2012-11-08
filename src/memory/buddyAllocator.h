@@ -3,34 +3,38 @@
 
 #include "types.h"
 
-// Smallest block size is X bytes
-#define BUDDY_SMALLEST_BLOCK (4 * 1024)
+/** The buddy allocation system:
+ *
+ * This system is used to allocate large chunks of a single block of memory.
+ * After each allocation is finished here, the caller is responsible for using
+ * it efficiently, i.e. splitting it up for further use.
+ */
+#define BUDDY_PAGE_SIZE(order) ((1 << (order)) * 4 * 1024)
 // There are X levels of allocation, each twice as big as the last
-#define BUDDY_LEVELS 4
-#define BUDDY_LARGEST_BLOCK (8 * BUDDY_SMALLEST_BLOCK)
+#define BUDDY_MAX_ORDER 8
+#define BUDDY_MAX_PAGE_SIZE BUDDY_PAGE_SIZE(BUDDY_MAX_ORDER - 1)
 
 namespace buddy {
 
-  enum BlockUsage {
-    FREE,
-    INUSE,
-    SPLIT
+  struct PageList {
+    PageList* nextFree;
   };
 
   class BuddyAllocator {
   private:
     BuddyAllocator(const BuddyAllocator&);
 
-    void * const mem_start;
-    const size_t mem_size;
-    BlockUsage* blocks[BUDDY_LEVELS];
-    size_t counts[BUDDY_LEVELS];
+    PageList blocks[BUDDY_MAX_ORDER];
+    size_t* allocations;
+    const qword start;
 
-    bool checkMerges();
-    void split(const qword level, const size_t index);
-    void * getLocation(const size_t level, const size_t index);
+    void insertFreePage(void* loc, const size_t order);
+    bool compactFromOrder(const size_t order);
+    void* allocatePage(const size_t order);
+    bool splitPage(const size_t order);
+
   public:
-    BuddyAllocator(void * location, const size_t size);
+    BuddyAllocator(void * location, size_t size);
     ~BuddyAllocator();
 
     void * allocate(const size_t);

@@ -3,190 +3,168 @@
 
 using namespace buddy;
 
-BuddyAllocator::BuddyAllocator(void * loc, const size_t size) {
+BuddyAllocator::BuddyAllocator(void * loc, size_t size) : start((qword)loc) {
+  for (size_t i = 0; i < BUDDY_MAX_ORDER; i++)
+    blocks[i].nextFree = NULL;
 
+  while (size > BUDDY_PAGE_SIZE(0)) {
+    size_t order = size / BUDDY_PAGE_SIZE(0);
+    if (order >= BUDDY_MAX_ORDER)
+      order = BUDDY_MAX_ORDER - 1;
+
+    insertFreePage(loc, order);
+    loc = (void*)((size_t)loc + BUDDY_PAGE_SIZE(order));
+    size -= BUDDY_PAGE_SIZE(order);
+  }
+
+  size_t count = size / BUDDY_PAGE_SIZE(0);
+  size_t alloc_size = count * sizeof(size_t);
+  for (size_t i = 0; i < BUDDY_MAX_ORDER; i++)
+    if (alloc_size <= BUDDY_PAGE_SIZE(i))
+      allocations = (size_t*)(allocatePage(i));
+  allocations[((qword)allocations - (qword)start) / BUDDY_PAGE_SIZE(0)] = alloc_size;
+}
+
+void BuddyAllocator::insertFreePage(void* location, const size_t order) {
+  PageList* nextFree = &(blocks[order]);
+  PageList* loc = (PageList*)location;
+
+  // Handle the case where the blocks[] entry is NULL.
+  if (nextFree->nextFree == NULL) {
+    loc->nextFree = NULL;
+    blocks[order].nextFree = loc;
+    return;
+  }
+
+  // Step through until we find the "proper" place in the free blocks.
+  while ((qword)(nextFree->nextFree) < (qword)loc) {
+    // If we encounter the end of the list, handle it.
+    if (nextFree->nextFree == NULL) {
+      loc->nextFree = NULL;
+      nextFree->nextFree = loc;
+      return;
+    }
+    // Otherwise, search the next element.
+    nextFree = nextFree->nextFree;
+  }
+  // If we get here, then the next item is past the location given.
+  loc->nextFree = nextFree->nextFree;
+  nextFree->nextFree = loc;
+}
+
+bool BuddyAllocator::compactFromOrder(const size_t order) {
+  if (order >= (BUDDY_MAX_ORDER - 1))
+    return false;
+
+  bool compacted = false;
+
+  PageList* next = &(blocks[order]);
+
+  while ((next->nextFree != NULL) && ((qword)(next->nextFree) != NULL)) {
+    if ((qword)next->nextFree == ((qword)(next->nextFree->nextFree) ^ BUDDY_PAGE_SIZE(order))) {
+      insertFreePage((void*)next->nextFree, order + 1);
+      compacted = true;
+    }
+    next = next->nextFree;
+  }
+
+  if (compacted)
+    compactFromOrder(order + 1);
+
+  return compacted;
 }
 
 BuddyAllocator::~BuddyAllocator() {
 
 }
 
+bool BuddyAllocator::splitPage(const size_t order) {
+  if (order <= 0)
+    return false;
+  if (order >= BUDDY_MAX_ORDER)
+    return false;
+
+  if (blocks[order].nextFree == NULL)
+    if (!splitPage(order + 1))
+      return false;
+
+  void* loc = (void*)(blocks[order].nextFree);
+  void* loc2 = (void*)((qword)loc + BUDDY_PAGE_SIZE(order - 1));
+  blocks[order].nextFree = blocks[order].nextFree->nextFree;
+
+  insertFreePage(loc, order - 1);
+  insertFreePage(loc2, order - 1);
+
+  return true;
+}
+
+void* BuddyAllocator::allocatePage(const size_t order) {
+  if (blocks[order].nextFree == NULL)
+    if(!splitPage(order + 1))
+      return NULL;
+
+  void* loc = (void*)(blocks[order].nextFree);
+  blocks[order].nextFree = blocks[order].nextFree->nextFree;
+
+  return loc;
+}
+
 void* BuddyAllocator::allocate(const size_t size) {
-  
-}
-  class BuddyAllocator {
-  private:
-    BuddyAllocator(const BuddyAllocator&);
-
-    void * const mem_start;
-    const size_t mem_size;
-    BlockUsage* blocks[BUDDY_LEVELS];
-    size_t counts[BUDDY_LEVELS];
-
-    bool checkMerges();
-    void split(const qword level, const size_t index);
-    void * getLocation(const size_t level, const size_t index);
-  public:
-    BuddyAllocator(void * location, const size_t size);
-    ~BuddyAllocator();
-
-    void * allocate(const size_t);
-    void free(void * const location);
-
-    void* operator new(size_t, void*);
-  };
-
-}
-
-#endif
-
-
-/*
-BlockManager::BlockManager(void* const loc, const qword length) : start(loc), size(length) {
-  // First, allocate enough arrays to store our blocks.
-  qword remaining = size;
-  void* pos = loc;
-  for (block_order_t i = BUDDY_LEVELS - 1; i >= 0; i--) {
-    counts[i] = remaining / Block::getSize(i);
-    blocks[i] = (Block*)(pos);
-    remaining -= counts[i] * sizeof(Block);
-    pos = (void*)((qword)pos + counts[i] * sizeof(Block));
-  }
-
-  for (block_order_t i = 0; i < BUDDY_LEVELS; i++) {
-    Block* b = blocks[i];
-    const qword blockSize = Block::getSize(i);
-    counts[i] = remaining / blockSize;
-    for (qword j = 0; j < counts[i]; j++) {
-      b = new(b) Block(pos, i);
-      pos = (void*)((qword)pos + blockSize);
-      b++;
-    }
-  }
-}
-
-BlockManager::~BlockManager() {
-  for (block_order_t i = 0; i < BUDDY_LEVELS; i++) {
-    Block* b = blocks[i];
-    for (qword j = 0; j < counts[i]; j++) {
-      b->Block::~Block();
-      b++;
-    }
-  }
-}
-
-void* BlockManager::allocate(qword size) {
-  block_order_t order = 0;
-  while ((Block::getSize(order) < size) && (order < BUDDY_LEVELS))
-    order++;
-
-  if (order < BUDDY_LEVELS) {
-    // The requested size fits within a single block.
-    // Search for an available block.
-    Block* b = blocks[order];
-    for (qword i = 0; i < counts[order]; i++) {
-      if (!b->isUsed()) {
-	b->setUsed(true);
-	return b->getLocation();
+  if (size <= BUDDY_MAX_PAGE_SIZE) {
+    for (size_t i = 0; i < BUDDY_MAX_ORDER; i++) {
+      if (size <= BUDDY_PAGE_SIZE(i)) {
+	void* ret = allocatePage(i);
+	if (ret != NULL)
+	  allocations[((qword)ret - start) / BUDDY_PAGE_SIZE(0)] = size;
+	return ret;
       }
     }
-    log_error("Unable to allocate block!");
-    return NULL;
+  }
+
+  // If we get here, it is not so simple. We need multiple large pages.
+  const size_t required = (size + BUDDY_MAX_PAGE_SIZE - 1) / BUDDY_MAX_PAGE_SIZE;
+  size_t found = 1;
+  PageList* nextFree = blocks[BUDDY_MAX_ORDER - 1].nextFree;
+  PageList* previous = &(blocks[BUDDY_MAX_ORDER - 1]);
+  void* loc = (void*)nextFree;
+
+  while (found < required) {
+    if (nextFree == NULL)
+      return NULL;
+
+    if ((qword)(nextFree->nextFree) == ((qword)nextFree + BUDDY_MAX_PAGE_SIZE))
+      found++;
+    else {
+      loc = (void*)(nextFree->nextFree);
+      previous = nextFree;
+      found = 1;
+    }
+    nextFree = nextFree->nextFree;
+  }
+  previous->nextFree = nextFree->nextFree;
+  allocations[((qword)loc - start) / BUDDY_PAGE_SIZE(0)] = size;
+  return loc;
+}
+
+void BuddyAllocator::free(void * const location) {
+  size_t size = allocations[((qword)location - start) / BUDDY_PAGE_SIZE(0)];
+
+  if (size <= BUDDY_MAX_PAGE_SIZE) {
+    for (int i = 0; i < BUDDY_MAX_ORDER; i++) {
+      if (size <= BUDDY_PAGE_SIZE(i)) {
+	insertFreePage(location, i);
+        compactFromOrder(i);
+      }
+    }
   } else {
-    // We need several blocks.
-    qword blocksNeeded = (size - 1 + Block::maxSize()) / Block::maxSize();
-    Block* start = blocks[BUDDY_LEVELS - 1];
-    for (qword i = 0; i <= (counts[BUDDY_LEVELS - 1] - blocksNeeded); i++) {
-      bool stillGood = true;
-      Block* b = start;
-      for (qword j = 0; j < blocksNeeded; j++) {
-	if (b->isUsed()) {
-	  stillGood = false;
-	  break;
-	}
-	b++;
-      }
-      if (stillGood) {
-	// Awesome! We have the needed blocks!
-	void* mem = start->getLocation();
-	start->setUsed(true);
-	b = start;
-	b++;
-	for (qword j = 0; j < blocksNeeded; j++) {
-	  b->setUsed(true);
-	  start++;
-	  b++;
-	}
-	return mem;
-      }
-      start++;
+    void* loc = location;
+    while(size > BUDDY_MAX_PAGE_SIZE) {
+      insertFreePage(loc, BUDDY_MAX_ORDER - 1);
+      loc = (void*)((qword)loc + BUDDY_MAX_PAGE_SIZE);
+      size -= BUDDY_MAX_PAGE_SIZE;
     }
+    if (size > 0)
+      insertFreePage(loc, BUDDY_MAX_ORDER - 1);
   }
-  log_error("Failed to allocate memory!");
-  return NULL;
+
 }
-
-void BlockManager::checkMerge(Block* b) {
-  if (b == NULL)
-    return;
-
-  if (b->isUsed())
-    return;
-
-  if (b->isMaxOrder())
-    return; // No recombination possible.
-
-  // We're good, check the buddy block.
-  //const qword bIndex = ((qword)(b->getLocation()) - (qword)(this->start)) / b->getSize();
-}
-
-void BlockManager::free(void*) {
-}
-
-bool Block::initialized = false;
-
-void Block::initialize() {
-  qword size = BUDDY_SMALLEST_BLOCK;
-  for (block_order_t i = 0; i < BUDDY_LEVELS; i++) {
-    blockSizes[i] = size;
-    size *= 2;
-  }
-  initialized = true;
-}
-
-Block::Block(void* loc, const block_order_t o)
-  : location(loc), order(o), usage(FREE) {}
-
-Block::~Block() {}
-
-void Block::split(Block* a, Block* b) {
-  const void* low = this->location;
-  const void* high = (void*)((qword)low + this->getSize());
-  if ((a->location < low) || (a->location > high) ||
-      (b->location < low) || (b->location > high))
-    return;
-
-  this->usage = SPLIT;
-}
-
-qword Block::getSize() {
-  qword size = BUDDY_SMALLEST_BLOCK;
-  for (block_order_t i = 0; i < BUDDY_LEVELS; i++)
-    size *= 2;
-  return size;
-}
-
-qword Block::getSize(const block_order_t s) {
-  if (!initialized)
-    initialize();
-  if (s < 0) {
-    log_error("Attempting to get size of negative block order!");
-    return 0;
-  }
-  if (s >= BUDDY_LEVELS) {
-    log_error("Attempting to get size of block order greater than BUDDY_LEVELS!");
-    return 0;
-  }
-  return blockSizes[s];
-}
-*/
