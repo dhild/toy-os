@@ -1,35 +1,33 @@
-include $(BASEMAKE)
+include $(TOS_BASEMAKE)
 
-OBJS = \
-	store_print_regs.o \
-	divide_error_exception.o \
-	debug_exception.o \
-	nmi_interrupt.o \
-	breakpoint_exception.o \
-	overflow_exception.o \
-	bound_range_exceeded_exception.o \
-	invalid_opcode_exception.o \
-	device_not_available_exception.o \
-	double_fault_exception.o \
-	invalid_tss_exception.o \
-	segment_not_present_exception.o \
-	stack_fault_exception.o \
-	general_protection_exception.o \
-	page_fault_exception.o \
-	x87_fpu_floating_point_error.o \
-	alignment_check_exception.o \
-	machine_check_exception.o \
-	simd_floating_point_exception.o
+OBJS := store_print_regs.o
+OBJS += divide_error_exception.o
+OBJS += debug_exception.o
+OBJS += nmi_interrupt.o
+OBJS += breakpoint_exception.o
+OBJS += overflow_exception.o
+OBJS += bound_range_exceeded_exception.o
+OBJS += invalid_opcode_exception.o
+OBJS += device_not_available_exception.o
+OBJS += double_fault_exception.o
+OBJS += invalid_tss_exception.o
+OBJS += segment_not_present_exception.o
+OBJS += stack_fault_exception.o
+OBJS += general_protection_exception.o
+OBJS += page_fault_exception.o
+OBJS += x87_fpu_floating_point_error.o
+OBJS += alignment_check_exception.o
+OBJS += machine_check_exception.o
+OBJS += simd_floating_point_exception.o
 
 INTERRUPTS_ARCHIVE = interrupts.a
 
 all: $(INTERRUPTS_ARCHIVE)
 
 $(INTERRUPTS_ARCHIVE): $(OBJS)
-	$(AR) -cruv $(INTERRUPTS_ARCHIVE) $(OBJS)
-	$(RANLIB) $(INTERRUPTS_ARCHIVE)
+	$(TOS_AR) -cruv $(INTERRUPTS_ARCHIVE) $(OBJS)
+	$(TOS_RANLIB) $(INTERRUPTS_ARCHIVE)
 
 clean:
 	rm -fr $(OBJS) $(INTERRUPTS_ARCHIVE)
 
-include $(DEPCHECK)

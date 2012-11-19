@@ -1,12 +1,12 @@
-SHELL = /bin/sh
-SRCDIR = $(realpath src)
-BASEMAKE = $(realpath ./base.mk)
-DEPCHECK = $(realpath ./depcheck.mk)
+MAKEFLAGS += -rR
 
-include $(BASEMAKE)
+TOS_BASEMAKE = $(realpath ./base.mk)
+TOS_DEPCHECK = $(realpath ./depcheck.mk)
+
+export TOS_DEPCHECK TOS_BASEMAKE
 
 .PHONY: all
-.PHONY: $(SRCDIR)
+.PHONY: src
 .PHONY: images
 .PHONY: umount
 .PHONY: compressed-img
@@ -16,13 +16,15 @@ include $(BASEMAKE)
 
 all: images
 
-$(SRCDIR):
-	make -C $(SRCDIR) BASEMAKE='$(BASEMAKE)' DEPCHECK='$(DEPCHECK)'
+include $(TOS_BASEMAKE)
+
+src:
+	make -C src
 
 hd.img: hd.img.xz
 	xz -dfk hd.img.xz
 
-images: $(SRCDIR) hd.img
+images: src hd.img
 	dd if=hd.img of=part1.img bs=1024 skip=1024 count=69536
 	debugfs -w -f copy_image.debugfs
 	dd if=part1.img of=hd.img bs=1024 seek=1024 count=69536
@@ -32,9 +34,8 @@ compressed-img:
 	xz -zfk hd.img
 
 clean:
-	make -C $(SRCDIR) clean BASEMAKE='$(BASEMAKE)' DEPCHECK='$(DEPCHECK)'
+	make -C src clean
 
 image-clean: compressed-img clean
 	rm -fr hd.img
 
-include $(DEPCHECK)

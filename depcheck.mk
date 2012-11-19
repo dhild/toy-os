@@ -9,4 +9,7 @@ clean: .depclean
 .depclean:
 	rm -fr .dep.inc $(wildcard $(addsuffix .d, ${OBJS}))
 
+ifneq ($(wildcard .dep.inc),)
 include .dep.inc
+endif
+
