@@ -5,6 +5,7 @@ ENTRY(__start)
 SECTIONS
 {
 	. = KERNEL_PHYSICAL_BASE;
+	__kernel_start = .;
 
 	.header :
 	{
@@ -63,5 +64,5 @@ SECTIONS
 
          __kernel_end = . - KERNEL_VIRTUAL_BASE;
 
-	 . = ASSERT((__kernel_end - __kernel_start) <= KERNEL_MAX_SIZE, "Size of kernel too large!")
+	 . = ASSERT((__kernel_end - __kernel_start) <= KERNEL_MAX_SIZE, "Size of kernel too large!");
 }

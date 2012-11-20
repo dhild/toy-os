@@ -1,5 +1,5 @@
-global loader:function  	; making entry point visible to linker
-extern kernel_begin_addr, end_of_data, end_of_kernel
+global __start:function  	; making entry point visible to linker
+extern __kernel_start, __kernel_data_end, __kernel_end
 extern make_page_tables, PML4Tables
 extern kmain, setup_interrupts, setup_printing
 extern start_ctors, end_ctors, start_dtors, end_dtors
@@ -22,10 +22,10 @@ MultiBootHeader:
 	dd FLAGS
 	dd CHECKSUM
 	dd MultiBootHeader   ; header_addr (flags[16])
-	dd kernel_begin_addr ; load_addr (flags[16])
-	dd end_of_data       ; load_end_addr (flags[16])
-	dd end_of_kernel     ; bss_end_addr (flags[16])
-	dd loader            ; entry_addr (flags[16])
+	dd __kernel_start    ; load_addr (flags[16])
+	dd __kernel_data_end ; load_end_addr (flags[16])
+	dd __kernel_end      ; bss_end_addr (flags[16])
+	dd __start           ; entry_addr (flags[16])
 	dd 1                 ; mode type (flags[2])
 	dd 0                 ; width (flags[2])
 	dd 0                 ; height (flags[2])
@@ -38,7 +38,7 @@ hang:
 	hlt
 	jmp hang
 
-loader:
+__start:
 	;; Keep interrupts disabled until we are set to handle them.
 	cli
 

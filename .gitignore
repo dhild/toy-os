@@ -6,3 +6,4 @@ bochs.log
 *.d
 *.dep.inc
 *~
+build/

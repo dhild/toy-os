@@ -1,17 +1,16 @@
 #ifndef _MEM_H_
 #define _MEM_H_
 
-typedef unsigned char byte;
-typedef unsigned short word;
-typedef unsigned int dword;
-typedef unsigned long qword;
-typedef signed char sbyte;
-typedef signed short sword;
-typedef signed int sdword;
-typedef signed long sqword;
+typedef __signed__ char __s8;
+typedef unsigned char __u8;
+typedef __signed__ short __s16;
+typedef unsigned short __u16;
+typedef __signed__ int __s32;
+typedef unsigned int __u32;
+typedef __signed__ long __s64;
+typedef unsigned long __u64;
 
-typedef unsigned long size_t;
-typedef signed long ssize_t;
+typedef __u64 size_t;
 
 #define NULL 0
 

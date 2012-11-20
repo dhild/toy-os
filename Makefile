@@ -1,13 +1,15 @@
+SHELL = /bin/bash
 MAKEFLAGS += -rR
 
-TOS_INCLUDE = $(realpath ./include)
-TOS_BASEMAKE = $(realpath ./base.mk)
-TOS_DEPCHECK = $(realpath ./depcheck.mk)
+TOS_BUILDDIR = $(abspath ./build/)
+TOS_INCLUDE := $(abspath ./include/)
+TOS_BASEMAKE := $(abspath ./base.mk)
+TOS_DEPCHECK := $(abspath ./depcheck.mk)
 
-export TOS_DEPCHECK TOS_BASEMAKE TOS_INCLUDE
+export TOS_DEPCHECK TOS_BASEMAKE TOS_INCLUDE TOS_BUILDDIR
 
 .PHONY: all
-.PHONY: boot include
+.PHONY: boot include interrupts
 .PHONY: src
 .PHONY: images
 .PHONY: compressed-img
@@ -19,11 +21,14 @@ all: images
 
 include $(TOS_BASEMAKE)
 
-boot:
-	make -C boot
+interrupts:
+	$(MAKE) -C interrupts
+
+boot: interrupts
+	$(MAKE) -C boot
 
 src:
-	make -C src
+	$(MAKE) -C src
 
 hd.img: hd.img.xz
 	xz -dfk hd.img.xz
@@ -32,15 +37,17 @@ images: boot src hd.img
 	dd if=hd.img of=part1.img bs=1024 skip=1024 count=69536
 	debugfs -w -f copy_image.debugfs
 	dd if=part1.img of=hd.img bs=1024 seek=1024 count=69536
-	rm -fr part1.img
+	$(RM) -fr part1.img
 
 compressed-img:
-	xz -zfk hd.img
+	$(xz) -zfk hd.img
 
 clean:
-	make -C boot clean
-	make -C src clean
+	$(MAKE) -C interrupts clean
+	$(MAKE) -C boot clean
+	$(MAKE) -C src clean
+	$(RM) -fr $(TOS_BUILDDIR)
 
 image-clean: compressed-img clean
-	rm -fr hd.img
+	$(RM) -fr hd.img
 

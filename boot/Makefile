@@ -1,14 +1,15 @@
+TOS_BUILDSUBDIR = $(TOS_BUILDDIR)/boot
+OBJS = multiboot.o paging.o idt.o printing.o
+CPPFLAGS += -I.
 include $(TOS_BASEMAKE)
 
-OBJS := multiboot.o paging.o
+KERNEL_FILE = $(TOS_BUILDDIR)/kernel.elf
+KERNEL_SCRIPT_FILE = $(TOS_BUILDSUBDIR)/kernel.ld
+KERNEL_MAP_FILE = $(TOS_BUILDDIR)/kernel.map
 
-KERNEL_FILE := kernel.elf
-KERNEL_SCRIPT_FILE := kernel.ld
-KERNEL_MAP_FILE := kernel.map
+KERNEL_SRCS = $(OBJS) $(TOS_BUILDDIR)/interrupts.a
 
-KERNEL_SRCS := $(OBJS)
-
-kernel_link := $(TOS_LD) $(LDFLAGS) \
+kernel_link = $(TOS_LD) $(LDFLAGS) \
                -T $(KERNEL_SCRIPT_FILE) \
                -Map $(KERNEL_MAP_FILE) \
                -o $(KERNEL_FILE) \
@@ -23,4 +24,4 @@ $(KERNEL_FILE): $(KERNEL_SRCS) $(KERNEL_SCRIPT_FILE)
 	$(kernel_link)
 
 clean:
-	rm -fr $(OBJS) $(KERNEL_FILE) $(KERNEL_MAP_FILE) $(KERNEL_SCRIPT_FILE)
+	$(RM) -fr $(OBJS) $(KERNEL_FILE) $(KERNEL_MAP_FILE) $(KERNEL_SCRIPT_FILE)
