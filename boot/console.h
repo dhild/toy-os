@@ -8,5 +8,5 @@
 #define ATTRIBUTE_BYTE ((__u8)0x07)
 #define TAB_WIDTH 8
 
-#endif // CONSOLE_H
+#endif /* CONSOLE_H */
 

@@ -1,28 +1,17 @@
 global setup_interrupts:function
 bits 64
 
-extern CodeSeg
-
-extern divide_error_exception
-extern debug_exception
-extern nmi_interrupt
-extern breakpoint_exception
-extern overflow_exception
-extern bound_range_exceeded_exception
-extern invalid_opcode_exception
-extern device_not_available_exception
-extern double_fault_exception
-extern invalid_tss_exception
-extern segment_not_present_exception
-extern stack_fault_exception
-extern general_protection_exception
-extern page_fault_exception
-extern x87_fpu_floating_point_error
-extern alignment_check_exception
-extern machine_check_exception
-extern simd_floating_point_exception
+extern KernelCodeSeg, interrupts
+extern printf, handle_exception
 
 section .data
+
+align 8
+recursion_flag:
+	dq 0
+
+panic_msg:
+	db 'PANIC: early exception %02lx rip %lx:%lx error %lx cr2 %lx\n', 0
 
 align 8
 table:
@@ -33,14 +22,14 @@ table:
 
 section .text
 
-	;; Sets up the interrupt tables with the basic interrupts defined as in
-	;; interrupts.h. All other interrupts are blank.
+	;; Sets up the interrupt tables with the basic interrupts defined as in	
+;; interrupts.h. All other interrupts are blank.
 	;; void setup_interrupts();
 setup_interrupts:
 	;; Install the base interrupt handlers
 	push rbx
 
-%macro interrupt 2
+%macro IDTentry 1
 	;; Sets an interrupt descriptor
 	;; dword 0: (31:16) segment selector
 	;;          (15:00) offset 15:00
@@ -57,42 +46,29 @@ setup_interrupts:
 	add rdi, rbx
 
 	;; dword 0
-	mov rbx, %2
+	mov rbx, idt_handler
 	mov word [rdi], bx
-	mov rbx, CodeSeg
+	mov rbx, KernelCodeSeg
 	mov word [rdi+2], bx
 
 	;; dword 1
-	mov rax, %2
+	mov rax, idt_handler
 	and eax, 0xFFFF0000
 	or ax, 0x8E00
 	mov dword [rdi+4], eax
 
 	;; dword 2 and 3
-	mov rbx, %2
+	mov rbx, idt_handler
 	shr rbx, 32
 	mov qword [rdi+8], rbx
 %endmacro
 
-	interrupt 0, divide_error_exception
-	interrupt 1, debug_exception
-	interrupt 2, nmi_interrupt
-	interrupt 3, breakpoint_exception
-	interrupt 4, overflow_exception
-	interrupt 5, bound_range_exceeded_exception
-	interrupt 6, invalid_opcode_exception
-	interrupt 7, device_not_available_exception
-	interrupt 8, double_fault_exception
-	interrupt 10, invalid_tss_exception
-	interrupt 11, segment_not_present_exception
-	interrupt 12, stack_fault_exception
-	interrupt 13, general_protection_exception
-	interrupt 14, page_fault_exception
-	interrupt 16, x87_fpu_floating_point_error
-	interrupt 17, alignment_check_exception
-	interrupt 18, machine_check_exception
-	interrupt 19, simd_floating_point_exception
-
+%assign i 0
+%rep 256
+	IDTentry i
+%assign i i+1
+%endrep
+	
 	;; Enable the interrupts and return
 	mov rax, table.Pointer
 	lidt [rax]
@@ -100,3 +76,59 @@ setup_interrupts:
 	sti
 	pop rbx
 	ret
+
+idt_handler:
+	cld
+	lea rdx, [rel recursion_flag]
+	cmp qword [rdx], 2
+	jz halt_loop
+	inc qword [rdx]
+
+	;; Save registers
+	push rax
+	push rcx
+	push rdx
+	push rsi
+	push rdi
+	push r8
+	push r9
+	push r10
+	push r11
+
+	cmp word [rsp+96], KernelCodeSeg
+	jne .panic
+
+	lea rdi, [rsp+88]	; pointer to rip
+	mov rax, handle_exception
+	call rax
+	and rax, rax
+	jnz .panic
+
+	pop r11
+	pop r10
+	pop r9
+	pop r8
+	pop rdi
+	pop rsi
+	pop rdx
+	pop rcx
+	pop rax
+
+	add rsp, 16		; Drop vector number and error code
+	dec qword [rel recursion_flag]
+	iretq
+
+.panic:
+	mov r9, cr2
+	mov r8, [rsp+80]	; Error code
+	mov rsi, [rsp+72]	; Vector number
+	mov rdx, [rsp+96]	; cs
+	mov rcx, [rsp+88]	; rip
+	xor eax, eax
+	lea rdi, [rel panic_msg]
+	mov rax, printf
+	call rax
+	
+halt_loop:
+	hlt
+	jmp halt_loop

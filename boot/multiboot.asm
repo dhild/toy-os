@@ -1,7 +1,7 @@
 global __start:function  	; making entry point visible to linker
 extern __kernel_start, __kernel_data_end, __kernel_end
 extern make_page_tables, PML4Tables
-extern kmain, setup_interrupts, setup_printing
+extern kmain, setup_interrupts, clearScreen
 extern start_ctors, end_ctors, start_dtors, end_dtors
 
 section .text
@@ -77,10 +77,10 @@ __start:
 	;;  The change from compatibility to 64-bit mode, we need a fresh jump
 	;;  using a 64-bit GDT pointer
 	lgdt [GDT64.Pointer]	; Load the 64-bit global descriptor table.
-	jmp CodeSeg:Realm64	; Set the code segment and enter 64-bit long mode.; Use 64-bit.
+	jmp KernelCodeSeg:Realm64	; Set the code segment and enter 64-bit long mode.; Use 64-bit.
 bits 64
 Realm64:
-	mov ax, DataSeg		; Set the A-register to the data descriptor.
+	mov ax, KernelDataSeg	; Set the A-register to the data descriptor.
 	mov ss, ax
 	mov ds, ax		; Set the data segment to the A-register.
 	mov es, ax		; Set the extra segment to the A-register.
@@ -96,7 +96,7 @@ Realm64:
 	;; Sets up for printing. We do this before interrupts so that we
 	;; can print during the interrupt calls themselves.
 	xchg bx, bx
-	mov rax, setup_printing
+	mov rax, clearScreen
 	call rax
 
 	;; Set up for the interrupts.
@@ -144,19 +144,19 @@ Realm64:
 	hlt			; Halt if we manage to return
 	jmp .halt
 
-global CodeSeg, DataSeg
+global KernelCodeSeg, KernelDataSeg
 
 GDT64:				; Global Descriptor Table (64-bit).
 NullSeg: equ $ - GDT64	; The null descriptor.
 	dq 0		;
-CodeSeg: equ $ - GDT64	; The kernel code descriptor.
+KernelCodeSeg: equ $ - GDT64	; The kernel code descriptor.
 	dw 0xFFFF	; Limit (low)
 	dw 0		; Base (low)
 	db 0		; Base (middle)
 	db 10011010B	; P | DPL | S | Type [Code | Conform | Read | Dirty]
 	db 10101111B	; G | D/B | L | Avl | Limit (high)
 	db 0		; Base (high)
-DataSeg: equ $ - GDT64	; The kernel data descriptor.
+KernelDataSeg: equ $ - GDT64	; The kernel data descriptor.
 	dw 0xFFFF	; Limit (low)
 	dw 0		; Base (low)
 	db 0		; Base (middle)
