@@ -111,8 +111,6 @@ Realm64:
 	mov rdi, mb_info
 	rep movsb
 
-	int 3
-
 	;; Run the C++ static constructors:
 	mov r12, start_ctors
 	mov r13, end_ctors

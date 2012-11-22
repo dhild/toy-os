@@ -15,7 +15,12 @@ panic_msg:
 
 align 8
 table:
-	times (512) dd 0
+%rep 256
+	dd 0			; Reserved
+	dd 0			; Offset
+	dd 0			; Offset + flags
+	dd 0			; Segment + offset
+%endrep
 .Pointer:			; The IDT-pointer.
 	dw (256 * 16)		; Limit.
 	dq table		; Base.
