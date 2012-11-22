@@ -47,7 +47,7 @@ void putchar(int c) {
     break;
   default:
     *(CURSOR_ADDRESS) = (__u16)((c & 0xFF) | (ATTRIBUTE_BYTE << 8));
-    cursorOffset += 2;
+    cursorOffset++;
   }
   if ((__u64)CURSOR_ADDRESS > (__u64)VIDEO_ADDRESS(width, height))
     scrollScreen();
