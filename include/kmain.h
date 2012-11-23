@@ -7,6 +7,14 @@ extern "C" {
 
   void kmain();
 
+  int isCanonicalAddress(const void*);
+
+  void* allocateKernelPages(size_t size);
+  void* allocateUserPages(size_t size);
+
+  void freeKernelPage(void* mem);
+  void freeUserPage(void* mem);
+
 #ifdef __cplusplus
 }
 #endif

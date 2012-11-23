@@ -1,32 +1,19 @@
 #ifndef PAGING_H
 #define PAGING_H
 
-#include "types.h"
+#include <paging.h>
+#include <types.h>
 
 //#define PAGING_USE_BUDDY_ALLOCATOR
 
-namespace paging {
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-  void initialize();
-
-  void * allocate(const size_t);
-  void free(void *);
-
-  bool isCanonicalAddress(const void *);
-
-  void * highToLow(const void * linearAddress);
-  void * lowToHigh(const void * linearAddress);
-
-  void setupPagingInternals();
-
-  bool isPhysicalPageUsed(const void * physicalAddress);
-  void * allocatePhysicalPage();
-  void freePhysicalPage(const void * physicalAddress);
-
-  typedef qword PML4E;
-  typedef qword PDPTE;
-  typedef qword PDTE;
-  typedef qword PTE;
+  typedef __u64 PML4E;
+  typedef __u64 PDPTE;
+  typedef __u64 PDTE;
+  typedef __u64 PTE;
 
   struct PML4T {
     PML4E entry[512];
@@ -41,28 +28,29 @@ namespace paging {
     PTE entry[512];
   };
 
-  bool setupPageTable(PT * tables, void * address, const qword flags, const bool increment = true);
-  bool setupPageDirectory(PDT * tables, void * address, const qword flags, const bool increment = true);
-  bool setupPageDirectory(PDT * tables, PT * address, const qword flags, const bool increment = true);
-  bool setupPageDirectoryPointer(PDPT * tables, void * address, const qword flags, const bool increment = true);
-  bool setupPageDirectoryPointer(PDPT * tables, PDT * address, const qword flags, const bool increment = true);
+  PTE* getPageTable(void* linear);
+  PDTE* getPageDirectory(void* linear);
+  PDPTE* getPageDirectoryPointer(void* linear);
+  PML4E* getPageLevel4(void* linear);
 
-  PML4T * getPML4T();
-  PDPT * getPDPTLow();
-  PDPT * getPDPTHigh();
-  PDT * getPDT(const void * linearAddress);
-  PT * getPT(const void * linearAddress);
+  int isPhysicalPageUsed(const void * physicalAddress);
+
+  int setupPageTable(PT * tables, void * address, const qword flags, const int increment = true);
+  int setupPageDirectory(PDT * tables, void * address, const qword flags, const bool increment = true);
+  int setupPageDirectory(PDT * tables, PT * address, const qword flags, const bool increment = true);
+  int setupPageDirectoryPointer(PDPT * tables, void * address, const qword flags, const bool increment = true);
+  int setupPageDirectoryPointer(PDPT * tables, PDT * address, const qword flags, const bool increment = true);
+
   void * getMemoryStart();
   void * getMemoryEnd();
   size_t getMemorySize();
 
-  bool setPTE(PTE * page, const void * address, const qword flags);
-  bool setPDTE(PDTE * page, const void * address, const qword flags);
-  bool setPDTE(PDTE * page, const PT * address, const qword flags);
-  bool setPDPTE(PDPTE * page, const void * address, const qword flags);
-  bool setPDPTE(PDPTE * page, const PDT * address, const qword flags);
-  bool setPML4E(PML4E * page, const void * address, const qword flags);
-}
+  int setPTE(PTE * page, const void * address, const qword flags);
+  int setPDTE(PDTE * page, const void * address, const qword flags);
+  int setPDTE(PDTE * page, const PT * address, const qword flags);
+  int setPDPTE(PDPTE * page, const void * address, const qword flags);
+  int setPDPTE(PDPTE * page, const PDT * address, const qword flags);
+  int setPML4E(PML4E * page, const void * address, const qword flags);
 
 // How many bits are used in each address?
 #define PAGING_ADDRESS_BITS 48
@@ -184,5 +172,9 @@ namespace paging {
 #define PAGING_PML4E_FLAGS_RESERVED \
   (PAGING_PML4E_FLAGS_RESERVED_0 | \
    PAGING_GLOBAL_RESERVED)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

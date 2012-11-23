@@ -9,7 +9,7 @@ TOS_BUILDSUBDIR := .
 
 export TOS_DEPCHECK TOS_BASEMAKE TOS_INCLUDE TOS_BUILDDIR
 
-SUBDIRS = boot interrupts lib kernel
+SUBDIRS = boot lib kernel
 
 .PHONY: all
 .PHONY: $(SUBDIRS)
@@ -24,16 +24,13 @@ include $(TOS_BASEMAKE)
 
 all: images
 
-interrupts:
-	$(MAKE) -C interrupts
-
 lib:
 	$(MAKE) -C lib
 
 kernel:
 	$(MAKE) -C kernel
 
-boot: interrupts lib kernel
+boot: lib kernel
 	$(MAKE) -C boot
 
 hd.img: hd.img.xz
@@ -49,7 +46,6 @@ compressed-img:
 	$(XZ) -zfk hd.img
 
 clean:
-	$(MAKE) -C interrupts clean
 	$(MAKE) -C kernel clean
 	$(MAKE) -C boot clean
 	$(MAKE) -C lib clean

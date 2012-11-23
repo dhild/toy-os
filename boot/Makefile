@@ -1,5 +1,5 @@
 TOS_BUILDSUBDIR = $(TOS_BUILDDIR)/boot
-OBJS = multiboot.o paging.o idt.o console.o
+OBJS = multiboot.o paging.o idt.o console.o interrupts.o
 CPPFLAGS += -I.
 include $(TOS_BASEMAKE)
 
@@ -8,7 +8,6 @@ KERNEL_SCRIPT_FILE = $(TOS_BUILDSUBDIR)/kernel.ld
 KERNEL_MAP_FILE = $(TOS_BUILDDIR)/kernel.map
 
 KERNEL_SRCS = $(OBJS)
-KERNEL_SRCS += $(TOS_BUILDDIR)/interrupts.a
 KERNEL_SRCS += $(TOS_BUILDDIR)/lib.a
 KERNEL_SRCS += $(TOS_BUILDDIR)/kernel.a
 

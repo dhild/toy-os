@@ -3,6 +3,7 @@
 
 #include <stdarg.h>
 #include <stddef.h>
+#include <video.h>
 
 #ifdef __cplusplus
 extern "C" {

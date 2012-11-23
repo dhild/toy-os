@@ -6,4 +6,3 @@ int handle_exception(void* rip) {
   rip = (void*)((__u64)rip + 1);
   return 0;
 }
-
