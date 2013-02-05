@@ -1,4 +1,4 @@
-#include <interrupts.h>
+#include <kernel/interrupts.h>
 
 interrupt_handler interrupts[256];
 

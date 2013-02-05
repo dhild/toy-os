@@ -1,4 +1,4 @@
-#include <boot/addresses.h>
+#include <kernel/boot/addresses.h>
 
 OUTPUT_FORMAT(elf64-x86-64)
 ENTRY(__start)

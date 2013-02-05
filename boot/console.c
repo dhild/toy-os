@@ -1,7 +1,7 @@
-#include <boot/addresses.h>
-#include <string.h>
-#include <types.h>
-#include <video.h>
+#include <config.h>
+#include <kernel/boot/addresses.h>
+#include <kernel/string.h>
+#include <kernel/video.h>
 #include "console.h"
 
 __u64 width = 80;
