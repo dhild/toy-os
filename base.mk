@@ -28,9 +28,11 @@ WARNING_FLAGS := -Wall -Wextra -Werror -pedantic
 STANDALONE_FLAGS := -nostdlib -nostartfiles -nodefaultlibs -ffreestanding
 CONVENTION_FLAGS := -fno-exceptions -fno-stack-protector -mno-red-zone
 MODE_FLAGS := -m64 -mcmodel=large -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow
-CPPFLAGS += $(WARNING_FLAGS)
+COMMON_FLAGS := -pipe
+DEBUGGING_FLAGS := -g
+CPPFLAGS += $(WARNING_FLAGS) $(COMMON_FLAGS)
 CPPFLAGS += -I $(TOS_INCLUDE)
-CFLAGS += $(STANDALONE_FLAGS) $(CONVENTION_FLAGS) $(MODE_FLAGS) -g
+CFLAGS += $(STANDALONE_FLAGS) $(CONVENTION_FLAGS) $(MODE_FLAGS) $(COMMON_FLAGS) $(DEBUGGING_FLAGS)
 CXXFLAGS += $(CFLAGS) -fno-rtti
 NASMARCH = elf64
 NASMFLAGS += -f $(NASMARCH) -Werror

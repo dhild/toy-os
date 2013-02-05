@@ -1,4 +1,3 @@
-open -w part1.img
 rm kernel.elf
 write build/kernel.elf kernel.elf
-close -a
+
