@@ -1,4 +1,4 @@
-SHELL = /bin/bash
+ SHELL = /bin/bash
 MAKEFLAGS += -rR
 
 all: .depcheck
@@ -6,7 +6,7 @@ all: .depcheck
 .SUFFIXES:
 .SUFFIXES: .c .cpp .asm .o .d .ld .ld.S
 
-Q := @
+Q := 
 CROSS_COMPILE := x86_64-elf-
 TOS_CPP = $(Q)$(CROSS_COMPILE)cpp
 TOS_CC = $(Q)$(CROSS_COMPILE)gcc
@@ -15,6 +15,7 @@ TOS_LD = $(Q)$(CROSS_COMPILE)ld
 TOS_AR = $(Q)$(CROSS_COMPILE)ar
 TOS_RANLIB = $(Q)$(CROSS_COMPILE)ranlib
 TOS_NASM = $(Q)nasm
+TOS_OBJCOPY = $(Q)$(CROSS_COMPILE)objcopy
 
 RM = $(Q)rm
 MKDIR = $(Q)mkdir
