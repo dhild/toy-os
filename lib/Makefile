@@ -2,7 +2,7 @@ TOS_BUILDSUBDIR = $(TOS_BUILDDIR)/lib
 
 include $(TOS_BASEMAKE)
 
-OBJS = string.o printf.o memory.o
+OBJS = string.o printf.o memory.o string2.o
 
 OBJS := $(addprefix $(TOS_BUILDSUBDIR)/,$(OBJS))
 

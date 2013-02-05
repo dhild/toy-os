@@ -1,7 +1,7 @@
-global memcpy:function
-global memset:function
-global strlen:function
-global strnlen:function
+;;global memcpy:function
+;;global memset:function
+;;global strlen:function
+;;global strnlen:function
 
 section .text
 bits 64
@@ -11,7 +11,7 @@ bits 64
 ;; rsi - src
 ;; rdx - len
 ;; rax - return (the original dest)
-memcpy:
+;;memcpy:
 	mov rax, rdi
 	mov rcx, rdx
 	cld
@@ -24,7 +24,7 @@ memcpy:
 ;; rsi - x
 ;; rdx - len
 ;; rax - return (the original dest)
-memset:
+;;memset:
 	mov r11, rdi
 	mov rcx, rdx
 	mov rax, rsi
@@ -37,7 +37,7 @@ memset:
 ;; size_t strlen(const char* str)
 ;; rdi - str
 ;; rax - return (the length of the C string)
-strlen:
+;;strlen:
 	xor rcx, rcx
 	repne scasb
 	not rcx

@@ -1,6 +1,6 @@
-#include <stdlib.h>
-#include <string.h>
-#include <types.h>
+#include <config.h>
+#include <kernel/stdlib.h>
+#include <kernel/string.h>
 #include "memory.h"
 
 void* calloc(size_t num, size_t size) {
