@@ -1,5 +1,5 @@
-#ifndef _MEM_H_
-#define _MEM_H_
+#ifndef KERNEL_TYPES_H
+#define KERNEL_TYPES_H
 
 typedef __signed__ char __s8;
 typedef unsigned char __u8;
@@ -10,4 +10,4 @@ typedef unsigned int __u32;
 typedef __signed__ long __s64;
 typedef unsigned long __u64;
 
-#endif /* _MEM_H_ */
+#endif /* KERNEL_TYPES_H */

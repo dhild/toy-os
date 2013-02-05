@@ -1,7 +1,7 @@
-#ifndef __STDDEF_H
-#define __STDDEF_H
+#ifndef KERNEL_STDDEF_H
+#define KERNEL_STDDEF_H
 
-#include <types.h>
+#include <config.h>
 
 #if defined(__cplusplus)
 #define NULL 0
@@ -11,4 +11,4 @@
 
 typedef __u64 size_t;
 
-#endif /* __STDDEF_H */
+#endif /* KERNEL_STDDEF_H */

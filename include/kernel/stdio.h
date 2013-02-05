@@ -1,9 +1,9 @@
-#ifndef __STDIO_H
-#define __STDIO_H
+#ifndef KERNEL_STDIO_H
+#define KERNEL_STDIO_H
 
-#include <stdarg.h>
-#include <stddef.h>
-#include <video.h>
+#include <kernel/stdarg.h>
+#include <kernel/stddef.h>
+#include <kernel/video.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,4 +31,4 @@ extern "C" {
 }
 #endif
 
-#endif /* __STDIO_H */
+#endif /* KERNEL_STDIO_H */

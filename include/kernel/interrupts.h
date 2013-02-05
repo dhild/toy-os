@@ -1,7 +1,7 @@
-#ifndef INTERRUPTS_H
-#define INTERRUPTS_H
+#ifndef KERNEL_INTERRUPTS_H
+#define KERNEL_INTERRUPTS_H
 
-#include <types.h>
+#include <config.h>
 
 #ifdef __cplusplus
 extern "C" {

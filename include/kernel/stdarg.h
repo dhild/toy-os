@@ -1,5 +1,5 @@
-#ifndef __STDARG_H
-#define __STDARG_H
+#ifndef KERNEL_STDARG_H
+#define KERNEL_STDARG_H
 
 #define va_start(v,l) __builtin_va_start(v,l)
 #define va_arg(v,l)   __builtin_va_arg(v,l)
@@ -7,4 +7,4 @@
 #define va_copy(v,l)  __builtin_va_copy(v,l)
 typedef __builtin_va_list va_list;
 
-#endif /* __STDARG_H */
+#endif /* KERNEL_STDARG_H */
