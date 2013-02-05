@@ -1,6 +1,8 @@
 #ifndef __KMAIN_H
 #define __KMAIN_H
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -164,7 +164,7 @@ void free(void * const location) {
   size_t size = allocations[((__u64)location - (__u64)start) / BUDDY_PAGE_SIZE(0)];
 
   if (size <= BUDDY_MAX_PAGE_SIZE) {
-    for (int i = 0; i < BUDDY_MAX_ORDER; i++) {
+    for (size_t i = 0; i < BUDDY_MAX_ORDER; i++) {
       if (size <= BUDDY_PAGE_SIZE(i)) {
 	insertFreePage(location, i);
         compactFromOrder(i);
