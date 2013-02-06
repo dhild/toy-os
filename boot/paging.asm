@@ -78,6 +78,4 @@ PDPTKernel:
 	times 4096 db 0
 PDTKernel:
 	times 4096 db 0
-PTKernel:
-	times (4096 * 1) db 0
 PTEnd:

@@ -150,21 +150,35 @@ using namespace paging;
   (PAGING_PML4E_FLAGS_RESERVED_0 | \
    PAGING_GLOBAL_RESERVED)
 
-/* These values are set by the boot code before jumping to kernel space. 
-extern PML4T PML4Tables;
-extern PDPT PDPTIdentity;
-extern PDPT PDPTKernel;
-
 namespace {
   PML4T* KernelPML4Table;
   PDPT* KernelPDPTIdentity;
   PDPT* KernelPDPTMapped;
   
   bool PDPT1GbTablesAllowed;
-}*/
+}
 
 void paging::setup_paging() {
-  
+  __u32 flags;
+  asm volatile (
+        "mov $0x80000001, %%eax\n\t"
+        "cpuid\n\t"
+	: "=d"(flags)
+	:
+	: "%rax", "%rbx", "%rcx" );
+
+  PDPT1GbTablesAllowed = flags & (1<<26);
+
+  asm volatile (
+        "mov %%cr3, %%rax\n\t"
+        "mov %%rax, %0\n\t"
+	: "=m"(KernelPML4Table)
+	:
+	: "%rax"
+	);
+
+  KernelPDPTIdentity = (PDPT*)((KernelPML4Table->entry[0]) & (PAGING_PDPTE_TABLE_ADDRESS | PAGING_CANNONICAL_BITS));
+  KernelPDPTMapped = (PDPT*)((KernelPML4Table->entry[384]) & (PAGING_PDPTE_TABLE_ADDRESS | PAGING_CANNONICAL_BITS));
 }
 
 void allocate_kernel_page() {

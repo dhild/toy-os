@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-  void kmain();
+  void kmain(void* mb_info_address);
 
 #ifdef __cplusplus
 }

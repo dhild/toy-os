@@ -12,14 +12,22 @@ static __u64 skip_atoi(const char **s) {
     i = (i * 10) + (*((*s)++) - '0');
   return i;
 }
+/*
+#define LEFT_JUSTIFY 1 / Left justify, default is right justify *
+#define PLUS         2 / Forces showing + signs, by default only negative *
+#define SPACE        4 / Forces inclusion space instead of + sign *
+#define HASH_FLAG    8 / Meaning is dependent upon specifier. *
+#define ZEROPAD     16 / Left-pads with zeros instead of spaces (the default). *
+#define PRECISION   32 / Precision is specified. *
 
-#define LEFT_JUSTIFY 1 /* Left justify, default is right justify */
-#define PLUS         2 /* Forces showing + signs, by default only negative */
-#define SPACE        4 /* Forces inclusion space instead of + sign */
-#define HASH_FLAG    8 /* Meaning is dependent upon specifier. */
-#define ZEROPAD     16 /* Left-pads with zeros instead of spaces (the default). */
-#define PRECISION   32 /* Precision is specified. */
-
+#define LENGTH_hh 1
+#define LENGTH_h  2
+#define LENGTH_l  3
+#define LENGTH_ll 4
+#define LENGTH_j  5
+#define LENGTH_z  6
+#define LENGTH_t  7
+#define LENGTH_L  8*/
 
 #define ZEROPAD 1  /* pad with zero */
 #define SIGN    2  /* unsigned/signed long */
@@ -300,7 +308,7 @@ int printf(const char* format, ...) {
 
   return printed;
 }
-
+/*
 int vsprintf(char* buf, const char* fmt, va_list args) {
   char* str;
 
@@ -310,10 +318,10 @@ int vsprintf(char* buf, const char* fmt, va_list args) {
       continue;
     }
 
-    /* process flags */
+    / process flags *
     __u16 flags = 0;
   search_flags:
-    ++fmt;/* this also skips first '%' */
+    ++fmt;/ this also skips first '%' *
     switch (*fmt) {
     case '-':
       flags |= LEFT_JUSTIFY;
@@ -332,44 +340,74 @@ int vsprintf(char* buf, const char* fmt, va_list args) {
       goto search_flags;
     }
 
-    /* get the width, if specified */
-    __u64 field_width = -1;
+    / get the width, if specified *
+    int field_width = -1;
     if (isdigit(*fmt))
       field_width = skip_atoi(&fmt);
     else if (*fmt == '*') {
       ++fmt;
-      /* it's the next argument */
-      field_width = va_arg(args, __s64);
+      / it's the next argument *
+      field_width = va_arg(args, int);
       if (field_width < 0) {
 	field_width = -field_width;
-	flags |= LEFT;
+	flags |= LEFT_JUSTIFY;
       }
     }
 
-    /* get the precision */
-    precision = -1;
+    / get the precision *
+    int precision = -1;
     if (*fmt == '.') {
       ++fmt;
       if (isdigit(*fmt))
 	precision = skip_atoi(&fmt);
       else if (*fmt == '*') {
 	++fmt;
-	/* it's the next argument */
+	/ it's the next argument *
 	precision = va_arg(args, int);
       }
       if (precision < 0)
 	precision = 0;
     }
 
-    /* get the conversion qualifier */
-    qualifier = -1;
-    if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L') {
-      qualifier = *fmt;
+    / get the length modifier *
+    int length = -1;
+    switch (*fmt) {
+    case 'h':
+      length = LENGTH_h;
       ++fmt;
+      if (*fmt == 'h') {
+	length = LENGTH_hh;
+	++fmt;
+      }
+      break;
+    case 'l':
+      length = LENGTH_l;
+      ++fmt;
+      if (*fmt == 'l') {
+	length = LENGTH_ll;
+	++fmt;
+      }
+      break;
+    case 'j':
+      length = LENGTH_j;
+      ++fmt;
+      break;
+    case 'z':
+      length = LENGTH_z;
+      ++fmt;
+      break;
+    case 't':
+      length = LENGTH_t;
+      ++fmt;
+      break;
+    case 'L':
+      length = LENGTH_L;
+      ++fmt;
+      break;
     }
 
-    /* default base */
-    base = 10;
+    / default base *
+    __u64 base = 10;
 
     switch (*fmt) {
     case 'c':
@@ -418,7 +456,7 @@ int vsprintf(char* buf, const char* fmt, va_list args) {
       *str++ = '%';
       continue;
 
-      /* integer number formats - set up the flags and "break" */
+      / integer number formats - set up the flags and "break" *
     case 'o':
       base = 8;
       break;
@@ -457,4 +495,4 @@ int vsprintf(char* buf, const char* fmt, va_list args) {
   }
   *str = '\0';
   return str - buf;
-}
+}*/

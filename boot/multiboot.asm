@@ -48,6 +48,7 @@ __start:
 
 	;; Store the boot info structure
 	mov ebp, ebx
+	xchg bx, bx
 	;; Temporarily set up the stack (we will do this again in 64-bit mode)
 	mov esp, TempStack
 	
@@ -105,11 +106,11 @@ Realm64:
 	call rax
 
 	;; Store the boot information
-	mov rcx, (mb_info.end - mb_info)
-	xor rsi, rsi
-	mov esi, ebp
-	mov rdi, mb_info
-	rep movsb
+	;mov rcx, (mb_info.end - mb_info)
+	;xor rsi, rsi
+	;mov esi, ebp
+	;mov rdi, mb_info
+	;rep movsb
 
 	;; Run the C++ static constructors:
 	mov r12, start_ctors
@@ -121,8 +122,9 @@ Realm64:
 	add r12, 8
 	jmp .ctors_loop
 .ctors_done:
-	
-	mov rdi, mb_info
+
+	xor rdi, rdi
+	mov edi, ebp
 	mov rax, kmain
 	call rax 		; Call the kernel proper
 
