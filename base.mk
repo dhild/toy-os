@@ -27,7 +27,7 @@ DEBUGFS = $(Q)debugfs
 WARNING_FLAGS := -Wall -Wextra -Werror -pedantic
 STANDALONE_FLAGS := -nostdlib -nostartfiles -nodefaultlibs -ffreestanding
 CONVENTION_FLAGS := -fno-exceptions -fno-stack-protector -mno-red-zone
-MODE_FLAGS := -m64 -mcmodel=large -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow
+MODE_FLAGS := -m64 -mcmodel=large -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow -mabi=sysv
 COMMON_FLAGS := -pipe
 DEBUGGING_FLAGS := -g
 CPPFLAGS += $(WARNING_FLAGS) $(COMMON_FLAGS)
