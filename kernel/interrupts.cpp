@@ -1,17 +1,8 @@
 #include <kernel/stdint.h>
+#include <kernel/string.h>
 #include <kernel/assembly.h>
 #include <kernel/logging.h>
 #include "interrupts.h"
-
-typedef struct __attribute__((__packed__)) IDTEntry {
-  uint16_t segment;
-  uint16_t offset_0_15;
-  uint16_t offset_16_31;
-  uint8_t  p_dpl_type_res;
-  uint8_t  res_ist;
-  uint32_t offset_32_63;
-  uint32_t reserved;
-} IDTEntry;
 
 #define MASK_IST  ((uint8_t)0x07)
 #define MASK_TYPE ((uint8_t)0x0F)
@@ -27,18 +18,45 @@ typedef struct __attribute__((__packed__)) IDTEntry {
 #define BITS_OFFSET_2(x) ((uint32_t)(0xFFFFFFFF & (x >> 32)))
 
 namespace {
+
+  typedef struct __attribute__((__packed__)) IDTEntry {
+    uint16_t segment;
+    uint16_t offset_0_15;
+    uint16_t offset_16_31;
+    uint8_t  p_dpl_type_res;
+    uint8_t  res_ist;
+    uint32_t offset_32_63;
+    uint32_t reserved;
+  } IDTEntry;
+
   typedef struct __attribute__((__packed__)) IDT_table {
     IDTEntry entry[256];
   } IDT_table;
 
   IDT_table IDT;
+
+  static inline void lidt() {
+    struct {
+      uint16_t length;
+      uint64_t address;
+    } __attribute__((__packed__)) IDTR;
+
+    IDTR.length = sizeof(IDT_table);
+    /* We want the address to be in the 'identity' paging area.
+     * We also know that this is within the first 1Gb of memory, physically.
+     */
+    IDTR.address = ((uint64_t)(&IDT)) & ((uint64_t)((1024 * 1024 * 1024) - 1));
+
+    asm volatile ("lidt (%0)" : : "p"(&IDTR) : "memory");
+  }
 }
 
 void interrupts::setup_interrupts() {
   /* Mark all entries as nonexistent until we set them. */
-  for (int i = 0; i < 256; i++) {
-    IDT.entry[0].p_dpl_type_res = 0;
-  }
+  memset(&IDT, 0, sizeof(IDT));
+
+  /* Load the IDT register. */
+  lidt();
 
   /* See if there is a local APIC */
   uint32_t eax, ebx, ecx, edx;
@@ -53,9 +71,12 @@ void interrupts::setup_interrupts() {
   }
 
   /* Now enable the x2APIC mode */
-  readMSR(IA32_APIC_BASE_MSR, &eax, &edx);
-  eax |= (1 << 10) | (1 << 11);
-  writeMSR(IA32_APIC_BASE_MSR, eax, edx);
+  uint64_t apic_msr = readMSR(IA32_APIC_BASE_MSR);
+  apic_msr |= (1 << 10) | (1 << 11);
+  writeMSR(IA32_APIC_BASE_MSR, apic_msr);
 
   log::debug("setup_interrupts()", "x2APIC Enabled");
+
+  
+
 }
