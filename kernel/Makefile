@@ -2,7 +2,7 @@ TOS_BUILDSUBDIR = $(TOS_BUILDDIR)/kernel
 
 include $(TOS_BASEMAKE)
 
-OBJS = kmain.o paging.o logging.o
+OBJS = kmain.o paging.o logging.o interrupts.o
 
 OBJS := $(addprefix $(TOS_BUILDSUBDIR)/,$(OBJS))
 

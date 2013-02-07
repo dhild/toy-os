@@ -2,6 +2,7 @@
 #include <kernel/logging.h>
 #include <kernel/stdio.h>
 #include <kernel/multiboot.h>
+#include "interrupts.h"
 #include "paging.h"
 
 
@@ -23,6 +24,8 @@ void kmain(void* mb_info_address) {
   puts("kmain()\n");
   
   log::info("kmain", "Testing logging");
+
+  interrupts::setup_interrupts();
 
   test_mb_info(mb_info_address);
   

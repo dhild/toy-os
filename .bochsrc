@@ -17,7 +17,7 @@ ata3: enabled=0
 pci: enabled=1, chipset=i440fx
 vga: extension=vbe, update_freq=5
 cpu: count=1, ips=4000000, model=bx_generic, reset_on_triple_fault=1, cpuid_limit_winnt=0, ignore_bad_msrs=1, mwait_is_nop=0
-cpuid: family=6, model=0x03, stepping=3, mmx=1, apic=xapic, sse=sse2, sse4a=0, sep=1, aes=0, xsave=0, xsaveopt=0, movbe=0, adx=0, smep=0, vmx=1, x86_64=1, 1g_pages=1, pcid=1, fsgsbase=1, mwait=1
+cpuid: family=6, model=0x03, stepping=3, mmx=1, apic=x2apic, sse=sse2, sse4a=0, sep=1, aes=0, xsave=0, xsaveopt=0, movbe=0, adx=0, smep=0, vmx=1, x86_64=1, 1g_pages=1, pcid=1, fsgsbase=1, mwait=1
 cpuid: vendor_string="AuthenticAMD"
 cpuid: brand_string="AMD Athlon(tm) processor"
 

@@ -96,14 +96,14 @@ Realm64:
 
 	;; Sets up for printing. We do this before interrupts so that we
 	;; can print during the interrupt calls themselves.
-	xchg bx, bx
-	mov rax, clearScreen
-	call rax
+ 	xchg bx, bx
+ 	mov rax, clearScreen
+ 	call rax
 
 	;; Set up for the interrupts.
 	;; The call itself should also enable them.
-	mov rax, setup_interrupts
-	call rax
+	;; 	mov rax, setup_interrupts
+	;; 	call rax
 
 	;; Store the boot information
 	;mov rcx, (mb_info.end - mb_info)
@@ -113,15 +113,15 @@ Realm64:
 	;rep movsb
 
 	;; Run the C++ static constructors:
-	mov r12, start_ctors
-	mov r13, end_ctors
-.ctors_loop:
-	cmp r12, r13
-	je .ctors_done
-	call r12
-	add r12, 8
-	jmp .ctors_loop
-.ctors_done:
+	;; 	mov r12, start_ctors
+	;; 	mov r13, end_ctors
+	;; .ctors_loop:
+	;; 	cmp r12, r13
+	;; 	je .ctors_done
+	;; 	call r12
+	;; 	add r12, 8
+	;; 	jmp .ctors_loop
+	;; .ctors_done:
 
 	xor rdi, rdi
 	mov edi, ebp
@@ -129,15 +129,15 @@ Realm64:
 	call rax 		; Call the kernel proper
 
 	;; Run the C++ static destructors
-	mov r12, start_dtors
-	mov r13, end_dtors
-.dtors_loop:
-	cmp r12, r13
-	je .dtors_done
-	call r12
-	add r12, 8
-	jmp .dtors_loop
-.dtors_done:
+	;; 	mov r12, start_dtors
+	;; 	mov r13, end_dtors
+	;; .dtors_loop:
+	;; 	cmp r12, r13
+	;; 	je .dtors_done
+	;; 	call r12
+	;; 	add r12, 8
+	;; 	jmp .dtors_loop
+	;; .dtors_done:
 
 .halt:
 	cli
@@ -221,7 +221,7 @@ mb_info:
 
 section .bss
 	;; reserve initial kernel stack space
-	STACKSIZE equ 0x10000	; that's 64kb.
+	STACKSIZE equ 0x200000	; that's 2Mb.
 	align 4
 stack:
 	   resb STACKSIZE	; reserve stack on a doubleword boundary
