@@ -10,6 +10,7 @@ TOS_BUILDSUBDIR := .
 export TOS_DEPCHECK TOS_BASEMAKE TOS_INCLUDE TOS_BUILDDIR
 
 SUBDIRS = boot lib kernel
+KERNEL_FILE := build/kernel.elf
 
 TEMP_DD_FILE := $(shell mktemp -u)
 
@@ -17,14 +18,23 @@ TEMP_DD_FILE := $(shell mktemp -u)
 .PHONY: $(SUBDIRS)
 .PHONY: src
 .PHONY: images
+.PHONY: extracted-img
 .PHONY: compressed-img
 .PHONY: clean
 .PHONY: image-clean
 .PHONY: hd
 
+ifeq ($(wildcard hd.img),)
+EXTRACT := extracted-img
+else
+EXTRACT :=
+endif
+
 include $(TOS_BASEMAKE)
 
-all: images
+all: hd.img
+
+$(KERNEL_FILE): $(SUBDIRS)
 
 lib:
 	$(MAKE) -C lib
@@ -35,10 +45,10 @@ kernel:
 boot: lib kernel
 	$(MAKE) -C boot
 
-hd.img: hd.img.xz
+extracted-img: hd.img.xz
 	$(XZ) -dfk hd.img.xz
 
-images: $(SUBDIRS) hd.img
+hd.img: $(KERNEL_FILE) $(EXTRACT)
 	$(DD) if=hd.img of=$(TEMP_DD_FILE) bs=1024 skip=1024 count=69536
 	$(DEBUGFS) -w -f copy_image.debugfs $(TEMP_DD_FILE)
 	$(DD) if=$(TEMP_DD_FILE) of=hd.img bs=1024 seek=1024 count=69536
