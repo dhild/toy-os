@@ -49,6 +49,8 @@ namespace {
 
     asm volatile ("lidt (%0)" : : "p"(&IDTR) : "memory");
   }
+
+  uint64_t x2APIC_ID;
 }
 
 void interrupts::setup_interrupts() {
@@ -70,13 +72,21 @@ void interrupts::setup_interrupts() {
     log::panic("setup_interrupts()", "No local x2APIC!");
   }
 
-  /* Now enable the x2APIC mode */
+  /* Now enable the x2APIC mode.
+   * Start by disabling the PIC (or ensuring it is disabled).
+   */
+  asm volatile ("mov $0xff, %%al \n\t"
+                "out %%al, $0xa1 \n\t"
+                "out %%al, $0x21 \n\t"
+		::: "al", "memory");
+  /* Next, write the proper bits to the MSR to indicate we want the x2APIC. */
   uint64_t apic_msr = readMSR(IA32_APIC_BASE_MSR);
   apic_msr |= (1 << 10) | (1 << 11);
   writeMSR(IA32_APIC_BASE_MSR, apic_msr);
 
   log::debug("setup_interrupts()", "x2APIC Enabled");
 
-  
+  x2APIC_ID = readMSR(X2APIC_LOCAL_ID_MSR);
 
 }
+

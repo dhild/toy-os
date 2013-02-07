@@ -6,7 +6,6 @@
 #include "paging.h"
 
 
-
 void test_mb_info(void* address) {
   if ((uint64_t)address & 7)
     log::panic("Multiboot test", "Multiboot header address not aligned!");
@@ -21,6 +20,7 @@ void test_mb_info(void* address) {
 }
 
 void kmain(void* mb_info_address) {
+  clearScreen();
   puts("kmain()\n");
   
   log::info("kmain", "Testing logging");

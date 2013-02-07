@@ -48,7 +48,7 @@ __start:
 
 	;; Store the boot info structure
 	mov ebp, ebx
-	xchg bx, bx
+
 	;; Temporarily set up the stack (we will do this again in 64-bit mode)
 	mov esp, TempStack
 	
@@ -81,36 +81,21 @@ __start:
 	jmp KernelCodeSeg:Realm64	; Set the code segment and enter 64-bit long mode.; Use 64-bit.
 bits 64
 Realm64:
-	mov ax, KernelDataSeg	; Set the A-register to the data descriptor.
+	;; Reload all the segment registers:
+	mov ax, KernelDataSeg
 	mov ss, ax
-	mov ds, ax		; Set the data segment to the A-register.
-	mov es, ax		; Set the extra segment to the A-register.
-	mov fs, ax		; Set the F-segment to the A-register.
-	mov gs, ax		; Set the G-segment to the A-register.
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
 
 	;; Initialize the stack pointer where we want it.
-	;; Technically, this is dangerous, since if there's an exception
-	;; due to the stack, then we won't know until later when we enable
-	;; the interrupts.
 	mov rsp, stack.end
-
-	;; Sets up for printing. We do this before interrupts so that we
-	;; can print during the interrupt calls themselves.
- 	xchg bx, bx
- 	mov rax, clearScreen
- 	call rax
 
 	;; Set up for the interrupts.
 	;; The call itself should also enable them.
-	;; 	mov rax, setup_interrupts
-	;; 	call rax
-
-	;; Store the boot information
-	;mov rcx, (mb_info.end - mb_info)
-	;xor rsi, rsi
-	;mov esi, ebp
-	;mov rdi, mb_info
-	;rep movsb
+	mov rax, setup_interrupts
+	call rax
 
 	;; Run the C++ static constructors:
 	;; 	mov r12, start_ctors
@@ -123,6 +108,7 @@ Realm64:
 	;; 	jmp .ctors_loop
 	;; .ctors_done:
 
+	;; 1st argument is the address of the multiboot structure:
 	xor rdi, rdi
 	mov edi, ebp
 	mov rax, kmain
