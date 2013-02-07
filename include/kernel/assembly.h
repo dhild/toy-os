@@ -7,12 +7,14 @@ inline void cpuid(uint32_t id, uint32_t* eax, uint32_t* ebx, uint32_t* ecx, uint
   asm volatile ("cpuid" : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx) : "a"(id));
 }
 
-inline void readMSR(uint32_t msr, uint32_t* low, uint32_t* high) {
-  asm volatile ("rdmsr" : "=a"(*low), "=d"(*high) : "c"(msr));
+inline uint64_t readMSR(uint32_t msr) {
+  uint64_t val;
+  asm volatile ("rdmsr" : "=A"(val) : "c"(msr));
+  return val;
 }
 
-inline void writeMSR(uint32_t msr, uint32_t low, uint32_t high) {
-  asm volatile ("wrmsr" :: "a"(low), "d"(high), "c"(msr));
+inline void writeMSR(uint32_t msr, uint64_t val) {
+  asm volatile ("wrmsr" :: "A"(val), "c"(msr));
 }
 
 #define IA32_APIC_BASE_MSR       (0x1B)
