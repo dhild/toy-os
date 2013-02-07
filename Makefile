@@ -10,7 +10,6 @@ TOS_BUILDSUBDIR := .
 export TOS_DEPCHECK TOS_BASEMAKE TOS_INCLUDE TOS_BUILDDIR
 
 SUBDIRS = boot lib kernel
-KERNEL_FILE := build/kernel.elf
 
 TEMP_DD_FILE := $(shell mktemp -u)
 
@@ -32,18 +31,30 @@ endif
 
 include $(TOS_BASEMAKE)
 
-all: hd.img
+KERNEL_FILE = $(TOS_BUILDDIR)/kernel.elf
+KERNEL_SYMBOL_FILE = $(TOS_BUILDDIR)/kernel.sym
+KERNEL_SCRIPT_FILE = $(TOS_BUILDDIR)/kernel.ld
+KERNEL_MAP_FILE = $(TOS_BUILDDIR)/kernel.map
+KERNEL_SRCS := $(TOS_BUILDDIR)/kernel.a \
+               $(TOS_BUILDDIR)/lib.a
 
-$(KERNEL_FILE): $(SUBDIRS)
+all: hd.img
+	$(MAKE) hd.img
+
+$(KERNEL_FILE): $(KERNEL_SRCS) $(KERNEL_SCRIPT_FILE)
+	$(TOS_LD) $(LDFLAGS) -T $(KERNEL_SCRIPT_FILE) -Map $(KERNEL_MAP_FILE) -o $(KERNEL_FILE) $(KERNEL_SRCS)
+	$(TOS_OBJCOPY) --only-keep-debug $(KERNEL_FILE) $(KERNEL_SYMBOL_FILE)
+	$(TOS_OBJCOPY) --strip-debug $(KERNEL_FILE)
+
+$(TOS_BUILDDIR)/kernel.a: kernel
+
+$(TOS_BUILDDIR)/lib.a: lib
 
 lib:
 	$(MAKE) -C lib
 
 kernel:
 	$(MAKE) -C kernel
-
-boot: lib kernel
-	$(MAKE) -C boot
 
 extracted-img: hd.img.xz
 	$(XZ) -dfk hd.img.xz
@@ -61,6 +72,7 @@ clean:
 	$(MAKE) -C kernel clean
 	$(MAKE) -C boot clean
 	$(MAKE) -C lib clean
+	$(RM) -fr $(KERNEL_FILE) $(KERNEL_MAP_FILE) $(KERNEL_SCRIPT_FILE) $(KERNEL_SYMBOL_FILE)
 	$(RM) -fr $(TOS_BUILDDIR)
 
 image-clean: compressed-img clean

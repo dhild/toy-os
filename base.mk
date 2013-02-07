@@ -67,7 +67,7 @@ $(TOS_BUILDSUBDIR)/%.o: %.asm
 	$(cmd_nasm_d_asm)
 	$(cmd_nasm_o_asm)
 
-$(TOS_BUILDSUBDIR)/%.ld: %.ld.S
+$(TOS_BUILDDIR)/%.ld: %.ld.S
 	$(cmd_cpp_ld_ldS)
 
 .depcheck:
