@@ -1,14 +1,14 @@
 #ifndef KERNEL_PAGING_H
 #define KERNEL_PAGING_H
 
-#include <types.h>
+#include <kernel/stdint.h>
 
 namespace paging {
 
-  typedef __u64 PML4E;
-  typedef __u64 PDPTE;
-  typedef __u64 PDTE;
-  typedef __u64 PTE;
+  typedef uint64_t PML4E;
+  typedef uint64_t PDPTE;
+  typedef uint64_t PDTE;
+  typedef uint64_t PTE;
   
   typedef struct PML4T {
     PML4E entry[512];

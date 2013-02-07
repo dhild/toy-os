@@ -1,4 +1,4 @@
-#include <config.h>
+#include <kernel/stdint.h>
 #include <kernel/stdlib.h>
 #include <kernel/string.h>
 #include "memory.h"
@@ -33,7 +33,7 @@ void insertFreePage(void* location, const size_t order) {
   }
 
   // Step through until we find the "proper" place in the free blocks.
-  while ((__u64)(nextFree->nextFree) < (__u64)loc) {
+  while ((uint64_t)(nextFree->nextFree) < (uint64_t)loc) {
     // If we encounter the end of the list, handle it.
     if (nextFree->nextFree == NULL) {
       loc->nextFree = NULL;
@@ -59,7 +59,7 @@ bool splitPage(const size_t order) {
       return false;
 
   void* loc = (void*)(blocks[order].nextFree);
-  void* loc2 = (void*)((__u64)loc + BUDDY_PAGE_SIZE(order - 1));
+  void* loc2 = (void*)((uint64_t)loc + BUDDY_PAGE_SIZE(order - 1));
   blocks[order].nextFree = ((PageList*)(blocks[order].nextFree))->nextFree;
 
   insertFreePage(loc, order - 1);
@@ -99,7 +99,7 @@ void initialize(void * loc, size_t size) {
   for (size_t i = 0; i < BUDDY_MAX_ORDER; i++)
     if (alloc_size <= BUDDY_PAGE_SIZE(i))
       allocations = (size_t*)(allocatePage(i));
-  allocations[((__u64)allocations - (__u64)start) / BUDDY_PAGE_SIZE(0)] = alloc_size;
+  allocations[((uint64_t)allocations - (uint64_t)start) / BUDDY_PAGE_SIZE(0)] = alloc_size;
 }
 
 bool compactFromOrder(const size_t order) {
@@ -110,8 +110,8 @@ bool compactFromOrder(const size_t order) {
 
   PageList* next = &(blocks[order]);
 
-  while ((next->nextFree != NULL) && ((__u64)(next->nextFree) != NULL)) {
-    if ((__u64)next->nextFree == ((__u64)(((PageList*)(next->nextFree))->nextFree) ^ BUDDY_PAGE_SIZE(order))) {
+  while ((next->nextFree != NULL) && ((uint64_t)(next->nextFree) != NULL)) {
+    if ((uint64_t)next->nextFree == ((uint64_t)(((PageList*)(next->nextFree))->nextFree) ^ BUDDY_PAGE_SIZE(order))) {
       insertFreePage((void*)next->nextFree, order + 1);
       compacted = true;
     }
@@ -129,7 +129,7 @@ void* allocate(const size_t size) {
       if (size <= BUDDY_PAGE_SIZE(i)) {
 	void* ret = allocatePage(i);
 	if (ret != NULL)
-	  allocations[((__u64)ret - (__u64)start) / BUDDY_PAGE_SIZE(0)] = size;
+	  allocations[((uint64_t)ret - (uint64_t)start) / BUDDY_PAGE_SIZE(0)] = size;
 	return ret;
       }
     }
@@ -146,7 +146,7 @@ void* allocate(const size_t size) {
     if (nextFree == NULL)
       return NULL;
 
-    if ((__u64)(nextFree->nextFree) == ((__u64)nextFree + BUDDY_MAX_PAGE_SIZE))
+    if ((uint64_t)(nextFree->nextFree) == ((uint64_t)nextFree + BUDDY_MAX_PAGE_SIZE))
       found++;
     else {
       loc = (void*)(nextFree->nextFree);
@@ -156,12 +156,12 @@ void* allocate(const size_t size) {
     nextFree = (PageList*)nextFree->nextFree;
   }
   previous->nextFree = nextFree->nextFree;
-  allocations[((__u64)loc - (__u64)start) / BUDDY_PAGE_SIZE(0)] = size;
+  allocations[((uint64_t)loc - (uint64_t)start) / BUDDY_PAGE_SIZE(0)] = size;
   return loc;
 }
 
 void free(void * const location) {
-  size_t size = allocations[((__u64)location - (__u64)start) / BUDDY_PAGE_SIZE(0)];
+  size_t size = allocations[((uint64_t)location - (uint64_t)start) / BUDDY_PAGE_SIZE(0)];
 
   if (size <= BUDDY_MAX_PAGE_SIZE) {
     for (size_t i = 0; i < BUDDY_MAX_ORDER; i++) {
@@ -174,7 +174,7 @@ void free(void * const location) {
     void* loc = location;
     while(size > BUDDY_MAX_PAGE_SIZE) {
       insertFreePage(loc, BUDDY_MAX_ORDER - 1);
-      loc = (void*)((__u64)loc + BUDDY_MAX_PAGE_SIZE);
+      loc = (void*)((uint64_t)loc + BUDDY_MAX_PAGE_SIZE);
       size -= BUDDY_MAX_PAGE_SIZE;
     }
     if (size > 0)

@@ -2,10 +2,10 @@
 #include <kernel/stdio.h>
 
 namespace {
-  __u64 minLogLevel = 0;
+  uint64_t minLogLevel = 0;
 }
 
-__u64 log::minLoggingLevel() {
+uint64_t log::minLoggingLevel() {
   return minLogLevel;
 }
 
@@ -28,7 +28,7 @@ void log::panic(const char* moduleName, const char* msg) {
                "jmp 1b\n\t");
 }
 
-void log::log(const __u64 level, const char* moduleName, const char* msg) {
+void log::log(const uint64_t level, const char* moduleName, const char* msg) {
   if (level < minLogLevel)
     return;
   

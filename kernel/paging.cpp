@@ -30,37 +30,37 @@ using namespace paging;
   int setPML4E(PML4E * page, const void * address, const qword flags);*/
 
 // How many bits are used in each address?
-#define PAGING_ADDRESS_BITS ((__u64)48)
+#define PAGING_ADDRESS_BITS ((uint64_t)48)
 // These are based on PAGING_ADDRESS_BITS.
 // They all MUST make sense together!
-#define PAGING_GLOBAL_RESERVED     ((__u64)0x000F000000000000)
-#define PAGING_CANNONICAL_BITS     ((__u64)0xFFFF000000000000)
-#define PAGING_PTE_ADDRESS         ((__u64)0x0000FFFFFFFFF000)
-#define PAGING_PDE_PAGE_ADDRESS    ((__u64)0x0000FFFFFFE00000)
-#define PAGING_PDE_TABLE_ADDRESS   ((__u64)0x0000FFFFFFFFF000)
-#define PAGING_PDPTE_PAGE_ADDRESS  ((__u64)0x0000FFFFC0000000)
-#define PAGING_PDPTE_TABLE_ADDRESS ((__u64)0x0000FFFFFFFFF000)
-#define PAGING_PML4E_TABLE_ADDRESS ((__u64)0x0000FFFFFFFFF000)
+#define PAGING_GLOBAL_RESERVED     ((uint64_t)0x000F000000000000)
+#define PAGING_CANNONICAL_BITS     ((uint64_t)0xFFFF000000000000)
+#define PAGING_PTE_ADDRESS         ((uint64_t)0x0000FFFFFFFFF000)
+#define PAGING_PDE_PAGE_ADDRESS    ((uint64_t)0x0000FFFFFFE00000)
+#define PAGING_PDE_TABLE_ADDRESS   ((uint64_t)0x0000FFFFFFFFF000)
+#define PAGING_PDPTE_PAGE_ADDRESS  ((uint64_t)0x0000FFFFC0000000)
+#define PAGING_PDPTE_TABLE_ADDRESS ((uint64_t)0x0000FFFFFFFFF000)
+#define PAGING_PML4E_TABLE_ADDRESS ((uint64_t)0x0000FFFFFFFFF000)
 
 // Common to all page tables:
-#define PAGING_PAGE_FLAGS_PRESENT         (((__u64)1)<<0)
-#define PAGING_PAGE_FLAGS_WRITEABLE       (((__u64)1)<<1)
-#define PAGING_PAGE_FLAGS_USER            (((__u64)1)<<2)
-#define PAGING_PAGE_FLAGS_PWT             (((__u64)1)<<3)
-#define PAGING_PAGE_FLAGS_PCD             (((__u64)1)<<4)
-#define PAGING_PAGE_FLAGS_ACCESSED        (((__u64)1)<<5)
-#define PAGING_PAGE_FLAGS_EXECUTE_DISABLE (((__u64)1)<<63)
-#define PAGING_PAGE_FLAGS_IGNORED_0       (((__u64)1)<<52)
-#define PAGING_PAGE_FLAGS_IGNORED_1       (((__u64)1)<<53)
-#define PAGING_PAGE_FLAGS_IGNORED_2       (((__u64)1)<<54)
-#define PAGING_PAGE_FLAGS_IGNORED_3       (((__u64)1)<<55)
-#define PAGING_PAGE_FLAGS_IGNORED_4       (((__u64)1)<<56)
-#define PAGING_PAGE_FLAGS_IGNORED_5       (((__u64)1)<<57)
-#define PAGING_PAGE_FLAGS_IGNORED_6       (((__u64)1)<<58)
-#define PAGING_PAGE_FLAGS_IGNORED_7       (((__u64)1)<<59)
-#define PAGING_PAGE_FLAGS_IGNORED_8       (((__u64)1)<<60)
-#define PAGING_PAGE_FLAGS_IGNORED_9       (((__u64)1)<<61)
-#define PAGING_PAGE_FLAGS_IGNORED_10      (((__u64)1)<<62)
+#define PAGING_PAGE_FLAGS_PRESENT         (((uint64_t)1)<<0)
+#define PAGING_PAGE_FLAGS_WRITEABLE       (((uint64_t)1)<<1)
+#define PAGING_PAGE_FLAGS_USER            (((uint64_t)1)<<2)
+#define PAGING_PAGE_FLAGS_PWT             (((uint64_t)1)<<3)
+#define PAGING_PAGE_FLAGS_PCD             (((uint64_t)1)<<4)
+#define PAGING_PAGE_FLAGS_ACCESSED        (((uint64_t)1)<<5)
+#define PAGING_PAGE_FLAGS_EXECUTE_DISABLE (((uint64_t)1)<<63)
+#define PAGING_PAGE_FLAGS_IGNORED_0       (((uint64_t)1)<<52)
+#define PAGING_PAGE_FLAGS_IGNORED_1       (((uint64_t)1)<<53)
+#define PAGING_PAGE_FLAGS_IGNORED_2       (((uint64_t)1)<<54)
+#define PAGING_PAGE_FLAGS_IGNORED_3       (((uint64_t)1)<<55)
+#define PAGING_PAGE_FLAGS_IGNORED_4       (((uint64_t)1)<<56)
+#define PAGING_PAGE_FLAGS_IGNORED_5       (((uint64_t)1)<<57)
+#define PAGING_PAGE_FLAGS_IGNORED_6       (((uint64_t)1)<<58)
+#define PAGING_PAGE_FLAGS_IGNORED_7       (((uint64_t)1)<<59)
+#define PAGING_PAGE_FLAGS_IGNORED_8       (((uint64_t)1)<<60)
+#define PAGING_PAGE_FLAGS_IGNORED_9       (((uint64_t)1)<<61)
+#define PAGING_PAGE_FLAGS_IGNORED_10      (((uint64_t)1)<<62)
 #define PAGING_PAGE_FLAGS_IGNORED \
   (PAGING_PAGE_FLAGS_IGNORED_0 |  \
    PAGING_PAGE_FLAGS_IGNORED_1 | \
@@ -75,12 +75,12 @@ using namespace paging;
    PAGING_PAGE_FLAGS_IGNORED_10)
 
 // Specific to 4Kb pages:
-#define PAGING_PTE_FLAGS_DIRTY      (((__u64)1)<<6)
-#define PAGING_PTE_FLAGS_PAT        (((__u64)1)<<7)
-#define PAGING_PTE_FLAGS_GLOBAL     (((__u64)1)<<8)
-#define PAGING_PTE_FLAGS_IGNORED_0  (((__u64)1)<<9)
-#define PAGING_PTE_FLAGS_IGNORED_1  (((__u64)1)<<10)
-#define PAGING_PTE_FLAGS_IGNORED_2  (((__u64)1)<<11)
+#define PAGING_PTE_FLAGS_DIRTY      (((uint64_t)1)<<6)
+#define PAGING_PTE_FLAGS_PAT        (((uint64_t)1)<<7)
+#define PAGING_PTE_FLAGS_GLOBAL     (((uint64_t)1)<<8)
+#define PAGING_PTE_FLAGS_IGNORED_0  (((uint64_t)1)<<9)
+#define PAGING_PTE_FLAGS_IGNORED_1  (((uint64_t)1)<<10)
+#define PAGING_PTE_FLAGS_IGNORED_2  (((uint64_t)1)<<11)
 #define PAGING_PTE_FLAGS_IGNORED \
   (PAGING_PTE_FLAGS_IGNORED_0 | \
    PAGING_PTE_FLAGS_IGNORED_1 | \
@@ -89,15 +89,15 @@ using namespace paging;
 #define PAGING_PTE_FLAGS_RESERVED PAGING_GLOBAL_RESERVED
 
 // Specific to 2Mb page tables:
-#define PAGING_PDE_FLAGS_PAGE_DIRTY      (((__u64)1)<<6)
-#define PAGING_PDE_FLAGS_TABLE_IGNORED_0 (((__u64)1)<<6)
-#define PAGING_PDE_FLAGS_PAGE            (((__u64)1)<<7)
-#define PAGING_PDE_FLAGS_PAGE_GLOBAL     (((__u64)1)<<8)
-#define PAGING_PDE_FLAGS_TABLE_IGNORED_1 (((__u64)1)<<8)
-#define PAGING_PDE_FLAGS_IGNORED_0       (((__u64)1)<<9)
-#define PAGING_PDE_FLAGS_IGNORED_1       (((__u64)1)<<10)
-#define PAGING_PDE_FLAGS_IGNORED_2       (((__u64)1)<<11)
-#define PAGING_PDE_FLAGS_PAGE_PAT        (((__u64)1)<<12)
+#define PAGING_PDE_FLAGS_PAGE_DIRTY      (((uint64_t)1)<<6)
+#define PAGING_PDE_FLAGS_TABLE_IGNORED_0 (((uint64_t)1)<<6)
+#define PAGING_PDE_FLAGS_PAGE            (((uint64_t)1)<<7)
+#define PAGING_PDE_FLAGS_PAGE_GLOBAL     (((uint64_t)1)<<8)
+#define PAGING_PDE_FLAGS_TABLE_IGNORED_1 (((uint64_t)1)<<8)
+#define PAGING_PDE_FLAGS_IGNORED_0       (((uint64_t)1)<<9)
+#define PAGING_PDE_FLAGS_IGNORED_1       (((uint64_t)1)<<10)
+#define PAGING_PDE_FLAGS_IGNORED_2       (((uint64_t)1)<<11)
+#define PAGING_PDE_FLAGS_PAGE_PAT        (((uint64_t)1)<<12)
 #define PAGING_PDE_FLAGS_PAGE_IGNORED \
   (PAGING_PDE_FLAGS_IGNORED_0 | \
    PAGING_PDE_FLAGS_IGNORED_1 | \
@@ -107,19 +107,19 @@ using namespace paging;
   (PAGING_PDE_FLAGS_TABLE_IGNORED_0 | \
    PAGING_PDE_FLAGS_TABLE_IGNORED_1 | \
    PAGING_PDE_FLAGS_PAGE_IGNORED)
-#define PAGING_PDE_FLAGS_PAGE_RESERVED  (((__u64)0x1FE000) | PAGING_GLOBAL_RESERVED)
+#define PAGING_PDE_FLAGS_PAGE_RESERVED  (((uint64_t)0x1FE000) | PAGING_GLOBAL_RESERVED)
 #define PAGING_PDE_FLAGS_TABLE_RESERVED PAGING_GLOBAL_RESERVED
 
 // Specific to 1Gb page tables:
-#define PAGING_PDPTE_FLAGS_PAGE_DIRTY      (((__u64)1)<<6)
-#define PAGING_PDPTE_FLAGS_TABLE_IGNORED_0 (((__u64)1)<<6)
-#define PAGING_PDPTE_FLAGS_PAGE            (((__u64)1)<<7)
-#define PAGING_PDPTE_FLAGS_PAGE_GLOBAL     (((__u64)1)<<8)
-#define PAGING_PDPTE_FLAGS_TABLE_IGNORED_1 (((__u64)1)<<8)
-#define PAGING_PDPTE_FLAGS_IGNORED_0       (((__u64)1)<<9)
-#define PAGING_PDPTE_FLAGS_IGNORED_1       (((__u64)1)<<10)
-#define PAGING_PDPTE_FLAGS_IGNORED_2       (((__u64)1)<<11)
-#define PAGING_PDPTE_FLAGS_PAGE_PAT        (((__u64)1)<<12)
+#define PAGING_PDPTE_FLAGS_PAGE_DIRTY      (((uint64_t)1)<<6)
+#define PAGING_PDPTE_FLAGS_TABLE_IGNORED_0 (((uint64_t)1)<<6)
+#define PAGING_PDPTE_FLAGS_PAGE            (((uint64_t)1)<<7)
+#define PAGING_PDPTE_FLAGS_PAGE_GLOBAL     (((uint64_t)1)<<8)
+#define PAGING_PDPTE_FLAGS_TABLE_IGNORED_1 (((uint64_t)1)<<8)
+#define PAGING_PDPTE_FLAGS_IGNORED_0       (((uint64_t)1)<<9)
+#define PAGING_PDPTE_FLAGS_IGNORED_1       (((uint64_t)1)<<10)
+#define PAGING_PDPTE_FLAGS_IGNORED_2       (((uint64_t)1)<<11)
+#define PAGING_PDPTE_FLAGS_PAGE_PAT        (((uint64_t)1)<<12)
 #define PAGING_PDPTE_FLAGS_PAGE_IGNORED \
   (PAGING_PDPTE_FLAGS_IGNORED_0 | \
    PAGING_PDPTE_FLAGS_IGNORED_1 | \
@@ -133,12 +133,12 @@ using namespace paging;
 #define PAGING_PDPTE_FLAGS_TABLE_RESERVED PAGING_GLOBAL_RESERVED
 
 // Specific to 512Gb page tables:
-#define PAGING_PML4E_FLAGS_IGNORED_0  (((__u64)1)<<6)
-#define PAGING_PML4E_FLAGS_RESERVED_0 (((__u64)1)<<7)
-#define PAGING_PML4E_FLAGS_IGNORED_1  (((__u64)1)<<8)
-#define PAGING_PML4E_FLAGS_IGNORED_2  (((__u64)1)<<9)
-#define PAGING_PML4E_FLAGS_IGNORED_3  (((__u64)1)<<10)
-#define PAGING_PML4E_FLAGS_IGNORED_4  (((__u64)1)<<11)
+#define PAGING_PML4E_FLAGS_IGNORED_0  (((uint64_t)1)<<6)
+#define PAGING_PML4E_FLAGS_RESERVED_0 (((uint64_t)1)<<7)
+#define PAGING_PML4E_FLAGS_IGNORED_1  (((uint64_t)1)<<8)
+#define PAGING_PML4E_FLAGS_IGNORED_2  (((uint64_t)1)<<9)
+#define PAGING_PML4E_FLAGS_IGNORED_3  (((uint64_t)1)<<10)
+#define PAGING_PML4E_FLAGS_IGNORED_4  (((uint64_t)1)<<11)
 #define PAGING_PML4E_FLAGS_IGNORED \
   (PAGING_PML4E_FLAGS_IGNORED_0 | \
    PAGING_PML4E_FLAGS_IGNORED_1 | \
@@ -159,7 +159,7 @@ namespace {
 }
 
 void paging::setup_paging() {
-  __u32 flags;
+  uint32_t flags;
   asm volatile (
         "mov $0x80000001, %%eax\n\t"
         "cpuid\n\t"

@@ -1,24 +1,24 @@
 #ifndef KERNEL_INTERRUPTS_H
 #define KERNEL_INTERRUPTS_H
 
-#include <config.h>
+#include <kernel/stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
   typedef struct {
-    __u64 rax, rbx, rcx, rdx;
-    __u64 rsp, rbp, rsi, rdi;
-    __u64 r8, r9, r10, r11;
-    __u64 r12, r13, r14, r15;
-    __u64 rflags;
-    __u64 rip;
-    __u64 cr2;
-    __u16 cs, ds, ss, es, fs, gs;
+    uint64_t rax, rbx, rcx, rdx;
+    uint64_t rsp, rbp, rsi, rdi;
+    uint64_t r8, r9, r10, r11;
+    uint64_t r12, r13, r14, r15;
+    uint64_t rflags;
+    uint64_t rip;
+    uint64_t cr2;
+    uint16_t cs, ds, ss, es, fs, gs;
   } __attribute__((packed)) interrupt_regs;
 
-  typedef void (*interrupt_handler)(__u64, interrupt_regs*);
+  typedef void (*interrupt_handler)(uint64_t, interrupt_regs*);
 
   extern interrupt_handler interrupts[256];
 

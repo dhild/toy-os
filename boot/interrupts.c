@@ -3,6 +3,6 @@
 interrupt_handler interrupts[256];
 
 int handle_exception(void* rip) {
-  rip = (void*)((__u64)rip + 1);
+  rip = (void*)((uint64_t)rip + 1);
   return 0;
 }

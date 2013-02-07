@@ -1,7 +1,7 @@
 #ifndef KERNEL_STRING_H
 #define KERNEL_STRING_H
 
-#include <config.h>
+#include <kernel/stdint.h>
 #include <kernel/stddef.h>
 
 #ifdef __cplusplus

@@ -1,12 +1,12 @@
 #ifndef KERNEL_LOGGING_H
 #define KERNEL_LOGGING_H
 
-#include <config.h>
+#include <kernel/stdint.h>
 
 namespace log {
   
-  void log(const __u64 level, const char* moduleName, const char* msg);
-  __u64 minLoggingLevel();
+  void log(const uint64_t level, const char* moduleName, const char* msg);
+  uint64_t minLoggingLevel();
   void info(const char* moduleName, const char* msg);
   void debug(const char* moduleName, const char* msg);
   void severe(const char* moduleName, const char* msg);

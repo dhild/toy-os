@@ -1,17 +1,17 @@
 #ifndef KERNEL_ASSEMBLY_H
 #define KERNEL_ASSEMBLY_H
 
-#include <config.h>
+#include <kernel/stdint.h>
 
-inline void cpuid(__u32 id, __u32* eax, __u32* ebx, __u32* ecx, __u32* edx) {
+inline void cpuid(uint32_t id, uint32_t* eax, uint32_t* ebx, uint32_t* ecx, uint32_t* edx) {
   asm volatile ("cpuid" : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx) : "a"(id));
 }
 
-inline void readMSR(__u32 msr, __u32* low, __u32* high) {
+inline void readMSR(uint32_t msr, uint32_t* low, uint32_t* high) {
   asm volatile ("rdmsr" : "=a"(*low), "=d"(*high) : "c"(msr));
 }
 
-inline void writeMSR(__u32 msr, __u32 low, __u32 high) {
+inline void writeMSR(uint32_t msr, uint32_t low, uint32_t high) {
   asm volatile ("wrmsr" :: "a"(low), "d"(high), "c"(msr));
 }
 

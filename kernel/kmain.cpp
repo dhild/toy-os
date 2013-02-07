@@ -8,14 +8,14 @@
 
 
 void test_mb_info(void* address) {
-  if ((__u64)address & 7)
+  if ((uint64_t)address & 7)
     log::panic("Multiboot test", "Multiboot header address not aligned!");
 
-  __u32 size = *(__u32*)address;
+  uint32_t size = *(uint32_t*)address;
 
-  for (multiboot_tag* tag = (multiboot_tag*)((__u64)address + 8);
+  for (multiboot_tag* tag = (multiboot_tag*)((uint64_t)address + 8);
        tag->type != MULTIBOOT_TAG_TYPE_END;
-       tag = (multiboot_tag*)(((__u64)tag + (tag->size + 7)) & ~7)) {
+       tag = (multiboot_tag*)(((uint64_t)tag + (tag->size + 7)) & ~7)) {
     size -= tag->size;
   }
 }

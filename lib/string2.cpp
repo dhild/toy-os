@@ -23,13 +23,13 @@ size_t strnlen(const char* str, size_t count) {
 
 void* memcpy(void* dest, void* src, size_t len) {
   for (size_t i = 0; i < len; i++)
-    ((__u8 *)dest)[i] = ((__u8 *)src)[i];
+    ((uint8_t *)dest)[i] = ((uint8_t *)src)[i];
   return dest;
 }
 
 void* memset(void* dest, int x, size_t len) {
   for (size_t i = 0; i < len; i++)
-    ((__u8 *)dest)[i] = (__u8)x;
+    ((uint8_t *)dest)[i] = (uint8_t)x;
   return dest;
 }
 

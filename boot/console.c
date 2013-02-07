@@ -1,15 +1,15 @@
-#include <config.h>
+#include <kernel/stdint.h>
 #include <kernel/boot/addresses.h>
 #include <kernel/string.h>
 #include <kernel/video.h>
 #include "console.h"
 
-__u64 width = 80;
-__u64 height = 25;
-__u8 charSize = 2;
-__u64 cursorOffset = 0;
+uint64_t width = 80;
+uint64_t height = 25;
+uint8_t charSize = 2;
+uint64_t cursorOffset = 0;
 
-#define CURSOR_ADDRESS (__u16*)(BASE_ADDRESS + (cursorOffset * charSize))
+#define CURSOR_ADDRESS (uint16_t*)(BASE_ADDRESS + (cursorOffset * charSize))
 #define TAB_SIZE (TAB_WIDTH * charSize)
 #define LINE_SIZE (width * charSize)
 #define VIDEO_SIZE (width * height * charSize)
@@ -46,9 +46,9 @@ void putchar(int c) {
     cursorOffset += TAB_SIZE - (cursorOffset % TAB_SIZE);
     break;
   default:
-    *(CURSOR_ADDRESS) = (__u16)((c & 0xFF) | (ATTRIBUTE_BYTE << 8));
+    *(CURSOR_ADDRESS) = (uint16_t)((c & 0xFF) | (ATTRIBUTE_BYTE << 8));
     cursorOffset++;
   }
-  if ((__u64)CURSOR_ADDRESS > (__u64)VIDEO_ADDRESS(width, height))
+  if ((uint64_t)CURSOR_ADDRESS > (uint64_t)VIDEO_ADDRESS(width, height))
     scrollScreen();
 }

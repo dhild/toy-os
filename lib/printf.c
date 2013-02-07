@@ -1,12 +1,12 @@
-#include <config.h>
+#include <kernel/stdint.h>
 #include <kernel/stdio.h>
 #include <kernel/string.h>
 #include <kernel/video.h>
 
 #define PRINTF_BUF_SIZE 2048
 
-static __u64 skip_atoi(const char **s) {
-  __u64 i = 0;
+static uint64_t skip_atoi(const char **s) {
+  uint64_t i = 0;
 
   while (isdigit(**s))
     i = (i * 10) + (*((*s)++) - '0');
@@ -37,7 +37,7 @@ static __u64 skip_atoi(const char **s) {
 #define SMALL   32 /* Must be 32 == 0x20 */
 #define SPECIAL 64 /* 0x */
 
-static inline int __do_div(__u64 n, __u64 base) {
+static inline int __do_div(uint64_t n, uint64_t base) {
   int __res;
   __res = ((unsigned long) n) % (unsigned) base;
   n = ((unsigned long) n) / (unsigned) base;
@@ -319,7 +319,7 @@ int vsprintf(char* buf, const char* fmt, va_list args) {
     }
 
     / process flags *
-    __u16 flags = 0;
+    uint16_t flags = 0;
   search_flags:
     ++fmt;/ this also skips first '%' *
     switch (*fmt) {
@@ -407,7 +407,7 @@ int vsprintf(char* buf, const char* fmt, va_list args) {
     }
 
     / default base *
-    __u64 base = 10;
+    uint64_t base = 10;
 
     switch (*fmt) {
     case 'c':
