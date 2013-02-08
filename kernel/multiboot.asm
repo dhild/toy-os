@@ -31,7 +31,9 @@ MultiBootHeader:
 	dd 0                 ; height (flags[2])
 	dd 0                 ; depth (flags[2])
 
-	times 64 dd 0
+	;; The temporary stack is a placeholder until 64-bit mode is entered.
+	;; Then, a new stack is placed in 'high memory'.
+	times 32 dd 0
 TempStack:
 hang:
 	;; Halts the machine
@@ -77,8 +79,9 @@ __start:
 
 	;;  The change from compatibility to 64-bit mode, we need a fresh jump
 	;;  using a 64-bit GDT pointer
-	lgdt [GDT64.Pointer]	; Load the 64-bit global descriptor table.
-	jmp KernelCodeSeg:Realm64	; Set the code segment and enter 64-bit long mode.; Use 64-bit.
+	lgdt [GDT64.Pointer]		; Load the 64-bit global descriptor table.
+	jmp KernelCodeSeg:Realm64	; Set the code segment and enter 64-bit long mode.
+	;; Use 64-bit code from here on.
 bits 64
 Realm64:
 	;; Reload all the segment registers:
@@ -88,6 +91,10 @@ Realm64:
 	mov es, ax
 	mov fs, ax
 	mov gs, ax
+
+	;; Load the task register:
+	mov ax, TSSSeg
+	ltr ax
 
 	;; Initialize the stack pointer where we want it.
 	mov rsp, stack.end
@@ -108,11 +115,12 @@ Realm64:
 	;; 	jmp .ctors_loop
 	;; .ctors_done:
 
+	;; Call the kernel's main C++ function.
 	;; 1st argument is the address of the multiboot structure:
 	xor rdi, rdi
 	mov edi, ebp
 	mov rax, kmain
-	call rax 		; Call the kernel proper
+	call rax
 
 	;; Run the C++ static destructors
 	;; 	mov r12, start_dtors
@@ -125,14 +133,12 @@ Realm64:
 	;; 	jmp .dtors_loop
 	;; .dtors_done:
 
-.halt:
-	cli
-	hlt			; Halt if we manage to return
-	jmp .halt
+	;; If we manage to return, halt.
+	jmp far KernelCodeSeg:hang
 
 global KernelCodeSeg, KernelDataSeg
 
-GDT64:				; Global Descriptor Table (64-bit).
+GDT64:			; Global Descriptor Table (64-bit).
 NullSeg: equ $ - GDT64	; The null descriptor.
 	dq 0		;
 KernelCodeSeg: equ $ - GDT64	; The kernel code descriptor.
@@ -149,66 +155,79 @@ KernelDataSeg: equ $ - GDT64	; The kernel data descriptor.
 	db 10010010B	; P | DPL | S | Type [Data | Exp-Dwn | Write | Dirty]
 	db 10101111B	; G | D/B | L | Avl | Limit (high)
 	db 0		; Base (high)
+
+TSSSeg:	equ $ - GDT64		; The TSS Descriptor
+	dw 0x67			; Limit (low)
+	dw (TSS & 0xFFFF)	; Base (low)
+	db ((TSS >> 16) & 0xFF)	; Base (mid1)
+	db (0x89)		; P | DPL | 0 | Type (0x9: 64-bit TSS, avail)
+	db 0			; G | 0 0 | AVL | Limit (high)
+	db ((TSS >> 24) & 0xFF)	; Base (mid2)
+	dd (TSS >> 32)		; Base (high)
+	dd 0			; Reserved
 	
 .Pointer:			; The GDT-pointer.
 	dw $ - GDT64 - 1	; Limit.
 	dq GDT64		; Base.
 
+	;; The TSS is required in 64-bit mode.
+	;; However, only one is ever used.
+TSS:	
+	dd 0 			; Reserved
+	dq 0			; RSP0
+	dq 0			; RSP1
+	dq 0			; RSP2
+	dq 0			; Reserved
+	dq endist1		; IST1
+	dq endist2		; IST2
+	dq endist3		; IST3
+	dq endist4		; IST4
+	dq endist5		; IST5
+	dq endist6		; IST6
+	dq endist7		; IST7
+	dq 0			; Reserved
+	dw 0			; Reserved
+	dw 0xFFFF		; I/O Map base address.
+.end:
+	;; When the I/O Map base address is higher than the TSS limit,
+	;; the I/O Map behaves as if all bits are set (access to I/O
+	;; ports when CPL > 0 is not allowed.)
 IOMap:
-	    times 32 db 0
-	    db 0xFF
-
-section .data
-global mb_info, mb_info.flags, mb_info.mem_upper
-mb_info:
-.flags:
-	dd 0
-.mem_lower:
-	dd 0
-.mem_upper:
-	dd 0
-.boot_device:
-	dd 0
-.cmdline:
-	dd 0
-.mods_count:
-	dd 0
-.mods_addr:
-	dd 0
-.syms:
-	times 4 dd 0
-.mmap_length:
-	dd 0
-.mmap_addr:
-	dd 0
-.drives_length:
-	dd 0
-.drives_addr:
-	dd 0
-.config_table:
-	dd 0
-.boot_loader_name:
-	dd 0
-.apm_table:
-	dd 0
-.vbe_control_info:
-	dd 0
-.vbe_mode_info:
-	dd 0
-.vbe_mode:
-	dw 0
-.vbe_interface_seg:
-	dw 0
-.vbe_interface_off:
-	dw 0
-.vbe_interface_len:
-	dw 0
 .end:
 
 section .bss
 	;; reserve initial kernel stack space
-	STACKSIZE equ 0x200000	; that's 2Mb.
-	align 4
+	STACKSIZE equ 0x4000	; that's 16kb
+align 8
 stack:
 	   resb STACKSIZE	; reserve stack on a doubleword boundary
 .end:
+	;; The IST stacks are used with interrupts.
+	;; They provide a fresh stack for interrupts to use.
+	ISTSIZE equ 4096
+	;; ist1 is used for NMI interrupts
+ist1:
+	resb ISTSIZE
+endist1:
+	;; ist2 is used for double fault interrupts
+ist2:
+	resb ISTSIZE
+endist2:
+	;; ist3 is used for Machine Check interrupts
+ist3:
+	resb ISTSIZE
+endist3:
+	;; ist4 is used for IRQs
+ist4:
+	resb ISTSIZE
+endist4:
+	;; ist5 is used for APIC interrupts
+ist5:
+	resb ISTSIZE
+endist5:
+ist6:
+	resb ISTSIZE
+endist6:
+ist7:
+	resb ISTSIZE
+endist7:
