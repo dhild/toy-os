@@ -23,6 +23,7 @@ MAKE = $(Q)make
 XZ = $(Q)xz
 DD = $(Q)dd
 DEBUGFS = $(Q)debugfs
+SED = $(Q)sed
 
 WARNING_FLAGS := -Wall -Wextra -Werror -pedantic
 STANDALONE_FLAGS := -nostdlib -nostartfiles -nodefaultlibs -ffreestanding
@@ -35,7 +36,7 @@ CPPFLAGS += -I $(TOS_INCLUDE)
 CFLAGS += $(STANDALONE_FLAGS) $(CONVENTION_FLAGS) $(MODE_FLAGS) $(COMMON_FLAGS) $(DEBUGGING_FLAGS)
 CXXFLAGS += $(CFLAGS) -fno-rtti
 NASMARCH = elf64
-NASMFLAGS += -f $(NASMARCH) -Werror
+NASMFLAGS += -f $(NASMARCH) -Werror -i $(TOS_INCLUDE)/
 LDARCH = elf_x86_64
 LDFLAGS += -m$(LDARCH) -nostdlib -nodefaultlibs -z max-page-size=0x1000
 DEPSFLAGS = -MMD -MP -MF $@.d

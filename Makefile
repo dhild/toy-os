@@ -9,7 +9,7 @@ TOS_BUILDSUBDIR := .
 
 export TOS_DEPCHECK TOS_BASEMAKE TOS_INCLUDE TOS_BUILDDIR
 
-SUBDIRS = boot lib kernel
+SUBDIRS = include lib kernel
 
 TEMP_DD_FILE := $(shell mktemp -u)
 
@@ -50,10 +50,13 @@ $(TOS_BUILDDIR)/kernel.a: kernel
 
 $(TOS_BUILDDIR)/lib.a: lib
 
-lib:
+include:
+	$(MAKE) -C include
+
+lib: include
 	$(MAKE) -C lib
 
-kernel:
+kernel: include
 	$(MAKE) -C kernel
 
 extracted-img: hd.img.xz
@@ -69,8 +72,8 @@ compressed-img:
 	$(XZ) -zfk hd.img
 
 clean:
+	$(MAKE) -C include clean
 	$(MAKE) -C kernel clean
-	$(MAKE) -C boot clean
 	$(MAKE) -C lib clean
 	$(RM) -fr $(KERNEL_FILE) $(KERNEL_MAP_FILE) $(KERNEL_SCRIPT_FILE) $(KERNEL_SYMBOL_FILE)
 	$(RM) -fr $(TOS_BUILDDIR)
