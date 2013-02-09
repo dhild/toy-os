@@ -45,10 +45,6 @@ define IRQ13_VECTOR (IRQ0_VECTOR + 13)
 define IRQ14_VECTOR (IRQ0_VECTOR + 14)
 define IRQ15_VECTOR (IRQ0_VECTOR + 15)
 
-// We'll use 64 for the syscall interface.
-
-define SYSCALL_VECTOR 0x40
-
 // Now for some APIC vectors. These are organized by priority.
 define APIC_TIMER_VECTOR    0xef
 define APIC_LINT0_VECTOR    0xf0

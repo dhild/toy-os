@@ -51,94 +51,118 @@ bits 64
 	pop r15
 %endmacro
 
-global interrupt0:function
-global interrupt1:function
-global interrupt2:function
-global interrupt3:function
-global interrupt4:function
-global interrupt5:function
-global interrupt6:function
-global interrupt7:function
-global interrupt8:function
-global interrupt9:function
-global interrupt10:function
-global interrupt11:function
-global interrupt12:function
-global interrupt13:function
-global interrupt14:function
-global interrupt16:function
-global interrupt17:function
-global interrupt18:function
-global interrupt19:function
-global interruptIRQ0:function
-global interruptIRQ1:function
-global interruptIRQ2:function
-global interruptIRQ3:function
-global interruptIRQ4:function
-global interruptIRQ5:function
-global interruptIRQ6:function
-global interruptIRQ7:function
-global interruptIRQ8:function
-global interruptIRQ9:function
-global interruptIRQ10:function
-global interruptIRQ11:function
-global interruptIRQ12:function
-global interruptIRQ13:function
-global interruptIRQ14:function
-global interruptIRQ15:function
-global interruptNonspecific:function
-global interruptSyscall:function
-global interruptAPICTimer:function
-global interruptAPICLINT0:function
-global interruptAPICLINT1:function
-global interruptAPICPerfMon:function
-global interruptAPICThermal:function
-global interruptAPICError:function
-global interruptAPICSpurious:function
+global divide_error_trap_gate
+divide_error_trap_gate:
+	iretq
 
+global nmi_interrupt_gate
+nmi_interrupt_gate:
+	iretq
 
-interrupt0:
-interrupt1:
-interrupt2:
-interrupt3:
-interrupt4:
-interrupt5:
-interrupt6:
-interrupt7:
-interrupt8:
-interrupt9:
-interrupt10:
-interrupt11:
-interrupt12:
-interrupt13:
-interrupt14:
-interrupt16:
-interrupt17:
-interrupt18:
-interrupt19:
-interruptIRQ0:
-interruptIRQ1:
-interruptIRQ2:
-interruptIRQ3:
-interruptIRQ4:
-interruptIRQ5:
-interruptIRQ6:
-interruptIRQ7:
-interruptIRQ8:
-interruptIRQ9:
-interruptIRQ10:
-interruptIRQ11:
-interruptIRQ12:
-interruptIRQ13:
-interruptIRQ14:
-interruptIRQ15:
-interruptNonspecific:
-interruptSyscall:
-interruptAPICTimer:
-interruptAPICLINT0:
-interruptAPICLINT1:
-interruptAPICPerfMon:
-interruptAPICThermal:
-interruptAPICError:
-interruptAPICSpurious:
+global stack_seg_fault_interrupt_gate
+stack_seg_fault_interrupt_gate:
+	iretq
+
+global general_protection_trap_gate
+general_protection_trap_gate:
+	iretq
+
+global page_fault_trap_gate
+page_fault_trap_gate:
+	iretq
+
+global machine_check_interrupt_gate
+machine_check_interrupt_gate:
+	iretq
+
+global irq0_trap_gate
+irq0_trap_gate:
+	iretq
+
+global irq1_trap_gate
+irq1_trap_gate:
+	iretq
+
+global irq2_trap_gate
+irq2_trap_gate:
+	iretq
+
+global irq3_trap_gate
+irq3_trap_gate:
+	iretq
+
+global irq4_trap_gate
+irq4_trap_gate:
+	iretq
+
+global irq5_trap_gate
+irq5_trap_gate:
+	iretq
+
+global irq6_trap_gate
+irq6_trap_gate:
+	iretq
+
+global irq7_trap_gate
+irq7_trap_gate:
+	iretq
+
+global irq8_trap_gate
+irq8_trap_gate:
+	iretq
+
+global irq9_trap_gate
+irq9_trap_gate:
+	iretq
+
+global irq10_trap_gate
+irq10_trap_gate:
+	iretq
+
+global irq11_trap_gate
+irq11_trap_gate:
+	iretq
+
+global irq12_trap_gate
+irq12_trap_gate:
+	iretq
+
+global irq13_trap_gate
+irq13_trap_gate:
+	iretq
+
+global irq14_trap_gate
+irq14_trap_gate:
+	iretq
+
+global irq15_trap_gate
+irq15_trap_gate:
+	iretq
+
+global apic_timer_trap_gate
+apic_timer_trap_gate:
+	iretq
+
+global apic_lint0_trap_gate
+apic_lint0_trap_gate:
+	iretq
+
+global apic_lint1_trap_gate
+apic_lint1_trap_gate:
+	iretq
+
+global apic_perf_mon_interrupt_gate
+apic_perf_mon_interrupt_gate:
+	iretq
+
+global apic_thermal_interrupt_gate
+apic_thermal_interrupt_gate:
+	iretq
+
+global apic_error_interrupt_gate
+apic_error_interrupt_gate:
+	iretq
+
+global apic_spurious_interrupt_gate
+apic_spurious_interrupt_gate:
 	iretq
