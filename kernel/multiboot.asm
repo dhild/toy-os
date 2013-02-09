@@ -92,15 +92,40 @@ Realm64:
 	mov fs, ax
 	mov gs, ax
 
-	;; Load the task register:
-	mov ax, TSSSeg
-	ltr ax
-
 	;; Initialize the stack pointer where we want it.
 	mov rsp, stack.end
 
+	;; 
+	;; Set up the TSS segment descriptor:
+	;; 
+	mov rdi, (GDT64 + TSSSeg)
+	;; First the limit bits
+	mov rax, (TSS.end - TSS)
+	mov word [rdi], ax
+	shr rax, 16
+	mov byte [rdi+6], al
+	;; Next, the base address bits
+	mov rax, TSS
+	mov word [rdi+2], ax
+	shr rax, 16
+	mov byte [rdi+4], al
+	shr rax, 8
+	mov byte [rdi+7], al
+	shr rax, 8
+	mov dword [rdi+8], eax
+	;; And finally, the flags:
+	;; (Technically, byte 7 also has the G and AVL flags.
+	;;  For our purposes, we ignore them.)
+	mov al, 0x89
+	mov byte [rdi+5], al
+
+	;; Now, load the task register:
+	mov ax, TSSSeg
+	ltr ax
+
+	;; 
 	;; Set up for the interrupts.
-	;; The call itself should also enable them.
+	;; 
 	mov rax, setup_interrupts
 	call rax
 
@@ -115,8 +140,10 @@ Realm64:
 	;; 	jmp .ctors_loop
 	;; .ctors_done:
 
+	;; 
 	;; Call the kernel's main C++ function.
 	;; 1st argument is the address of the multiboot structure:
+	;; 
 	xor rdi, rdi
 	mov edi, ebp
 	mov rax, kmain
@@ -134,7 +161,7 @@ Realm64:
 	;; .dtors_done:
 
 	;; If we manage to return, halt.
-	jmp far KernelCodeSeg:hang
+	jmp hang
 
 global KernelCodeSeg, KernelDataSeg
 
@@ -157,14 +184,8 @@ KernelDataSeg: equ $ - GDT64	; The kernel data descriptor.
 	db 0		; Base (high)
 
 TSSSeg:	equ $ - GDT64		; The TSS Descriptor
-	dw 0x67			; Limit (low)
-	dw (TSS & 0xFFFF)	; Base (low)
-	db ((TSS >> 16) & 0xFF)	; Base (mid1)
-	db (0x89)		; P | DPL | 0 | Type (0x9: 64-bit TSS, avail)
-	db 0			; G | 0 0 | AVL | Limit (high)
-	db ((TSS >> 24) & 0xFF)	; Base (mid2)
-	dd (TSS >> 32)		; Base (high)
-	dd 0			; Reserved
+	dq 0			; This is set up in code.
+	dq 0
 	
 .Pointer:			; The GDT-pointer.
 	dw $ - GDT64 - 1	; Limit.
@@ -188,11 +209,10 @@ TSS:
 	dq 0			; Reserved
 	dw 0			; Reserved
 	dw 0xFFFF		; I/O Map base address.
-.end:
 	;; When the I/O Map base address is higher than the TSS limit,
 	;; the I/O Map behaves as if all bits are set (access to I/O
 	;; ports when CPL > 0 is not allowed.)
-IOMap:
+.IOMap:
 .end:
 
 section .bss
@@ -213,7 +233,7 @@ endist1:
 ist2:
 	resb ISTSIZE
 endist2:
-	;; ist3 is used for Machine Check interrupts
+	;; ist3 is used for machine check exceptions
 ist3:
 	resb ISTSIZE
 endist3:
@@ -225,6 +245,7 @@ endist4:
 ist5:
 	resb ISTSIZE
 endist5:
+	;; ist6 is used for stack seg faults
 ist6:
 	resb ISTSIZE
 endist6:
