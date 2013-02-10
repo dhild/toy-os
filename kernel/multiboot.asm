@@ -95,6 +95,9 @@ Realm64:
 	;; Initialize the stack pointer where we want it.
 	mov rsp, stack.end
 
+	mov ax, LDTSeg
+	lldt ax
+
 	;; 
 	;; Set up the TSS segment descriptor:
 	;; 
@@ -182,6 +185,14 @@ KernelDataSeg: equ $ - GDT64	; The kernel data descriptor.
 	db 10010010B	; P | DPL | S | Type [Data | Exp-Dwn | Write | Dirty]
 	db 10101111B	; G | D/B | L | Avl | Limit (high)
 	db 0		; Base (high)
+
+LDTSeg:	equ $ - GDT64		; Dummy LDT descriptor
+	dw 0			; Limit (0 - there are no entries.)
+	dw 0			; Address (0)
+	db 0			;
+	db 10000010B		; P | DPL | S | Type [LDT]
+	db 10100000B		; G | D/B | L | Avl | Limit (0)
+	db 0			; Address (0)
 
 TSSSeg:	equ $ - GDT64		; The TSS Descriptor
 	dq 0			; This is set up in code.
