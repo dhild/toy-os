@@ -12,22 +12,6 @@ static uint64_t skip_atoi(const char **s) {
     i = (i * 10) + (*((*s)++) - '0');
   return i;
 }
-/*
-#define LEFT_JUSTIFY 1 / Left justify, default is right justify *
-#define PLUS         2 / Forces showing + signs, by default only negative *
-#define SPACE        4 / Forces inclusion space instead of + sign *
-#define HASH_FLAG    8 / Meaning is dependent upon specifier. *
-#define ZEROPAD     16 / Left-pads with zeros instead of spaces (the default). *
-#define PRECISION   32 / Precision is specified. *
-
-#define LENGTH_hh 1
-#define LENGTH_h  2
-#define LENGTH_l  3
-#define LENGTH_ll 4
-#define LENGTH_j  5
-#define LENGTH_z  6
-#define LENGTH_t  7
-#define LENGTH_L  8*/
 
 #define ZEROPAD 1  /* pad with zero */
 #define SIGN    2  /* unsigned/signed long */
@@ -37,18 +21,20 @@ static uint64_t skip_atoi(const char **s) {
 #define SMALL   32 /* Must be 32 == 0x20 */
 #define SPECIAL 64 /* 0x */
 
+/* EDIT: Removed; unless this is inline, the side effect is not seen.
 static inline int __do_div(uint64_t n, uint64_t base) {
   int __res;
   __res = ((unsigned long) n) % (unsigned) base;
   n = ((unsigned long) n) / (unsigned) base;
   return __res;
-}
+}*/
 
 static char *number(char *str, long num, int base, int size, int precision,
 		    int type)
 {
   /* we are called with base 8, 10 or 16, only, thus don't need "G..."  */
-  static const char digits[16] = "0123456789ABCDEF"; /* "GHIJKLMNOPQRSTUVWXYZ"; */
+  /* EDIT: Including them anyways. */
+  static const char digits[36] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
   char tmp[66];
   char c, sign, locase;
@@ -86,8 +72,11 @@ static char *number(char *str, long num, int base, int size, int precision,
   if (num == 0)
     tmp[i++] = '0';
   else
-    while (num != 0)
-      tmp[i++] = (digits[__do_div(num, base)] | locase);
+    while (num != 0) {
+      int index = ((unsigned long) num) % (unsigned) base;
+      num = ((unsigned long) num) / (unsigned) base;
+      tmp[i++] = (digits[index] | locase);
+    }
   if (i > precision)
     precision = i;
   size -= precision;
@@ -308,191 +297,4 @@ int printf(const char* format, ...) {
 
   return printed;
 }
-/*
-int vsprintf(char* buf, const char* fmt, va_list args) {
-  char* str;
 
-  for (str = buf; *fmt; ++fmt) {
-    if (*fmt != '%') {
-      *str++ = *fmt;
-      continue;
-    }
-
-    / process flags *
-    uint16_t flags = 0;
-  search_flags:
-    ++fmt;/ this also skips first '%' *
-    switch (*fmt) {
-    case '-':
-      flags |= LEFT_JUSTIFY;
-      goto search_flags;
-    case '+':
-      flags |= PLUS;
-      goto search_flags;
-    case ' ':
-      flags |= SPACE;
-      goto search_flags;
-    case '#':
-      flags |= HASH_FLAG;
-      goto search_flags;
-    case '0':
-      flags |= ZEROPAD;
-      goto search_flags;
-    }
-
-    / get the width, if specified *
-    int field_width = -1;
-    if (isdigit(*fmt))
-      field_width = skip_atoi(&fmt);
-    else if (*fmt == '*') {
-      ++fmt;
-      / it's the next argument *
-      field_width = va_arg(args, int);
-      if (field_width < 0) {
-	field_width = -field_width;
-	flags |= LEFT_JUSTIFY;
-      }
-    }
-
-    / get the precision *
-    int precision = -1;
-    if (*fmt == '.') {
-      ++fmt;
-      if (isdigit(*fmt))
-	precision = skip_atoi(&fmt);
-      else if (*fmt == '*') {
-	++fmt;
-	/ it's the next argument *
-	precision = va_arg(args, int);
-      }
-      if (precision < 0)
-	precision = 0;
-    }
-
-    / get the length modifier *
-    int length = -1;
-    switch (*fmt) {
-    case 'h':
-      length = LENGTH_h;
-      ++fmt;
-      if (*fmt == 'h') {
-	length = LENGTH_hh;
-	++fmt;
-      }
-      break;
-    case 'l':
-      length = LENGTH_l;
-      ++fmt;
-      if (*fmt == 'l') {
-	length = LENGTH_ll;
-	++fmt;
-      }
-      break;
-    case 'j':
-      length = LENGTH_j;
-      ++fmt;
-      break;
-    case 'z':
-      length = LENGTH_z;
-      ++fmt;
-      break;
-    case 't':
-      length = LENGTH_t;
-      ++fmt;
-      break;
-    case 'L':
-      length = LENGTH_L;
-      ++fmt;
-      break;
-    }
-
-    / default base *
-    uint64_t base = 10;
-
-    switch (*fmt) {
-    case 'c':
-      if (!(flags & LEFT))
-	while (--field_width > 0)
-	  *str++ = ' ';
-      *str++ = (unsigned char)va_arg(args, int);
-      while (--field_width > 0)
-	*str++ = ' ';
-      continue;
-
-    case 's':
-      s = va_arg(args, char *);
-      len = strnlen(s, precision);
-
-      if (!(flags & LEFT))
-	while (len < field_width--)
-	  *str++ = ' ';
-      for (i = 0; i < len; ++i)
-	*str++ = *s++;
-      while (len < field_width--)
-	*str++ = ' ';
-      continue;
-
-    case 'p':
-      if (field_width == -1) {
-	field_width = 2 * sizeof(void *);
-	flags |= ZEROPAD;
-      }
-      str = number(str,
-		   (unsigned long)va_arg(args, void *), 16,
-		   field_width, precision, flags);
-      continue;
-
-    case 'n':
-      if (qualifier == 'l') {
-	long *ip = va_arg(args, long *);
-	*ip = (str - buf);
-      } else {
-	int *ip = va_arg(args, int *);
-	*ip = (str - buf);
-      }
-      continue;
-
-    case '%':
-      *str++ = '%';
-      continue;
-
-      / integer number formats - set up the flags and "break" *
-    case 'o':
-      base = 8;
-      break;
-
-    case 'x':
-      flags |= SMALL;
-    case 'X':
-      base = 16;
-      break;
-
-    case 'd':
-    case 'i':
-      flags |= SIGN;
-    case 'u':
-      break;
-
-    default:
-      *str++ = '%';
-      if (*fmt)
-	*str++ = *fmt;
-      else
-	--fmt;
-      continue;
-    }
-    if (qualifier == 'l')
-      num = va_arg(args, unsigned long);
-    else if (qualifier == 'h') {
-      num = (unsigned short)va_arg(args, int);
-      if (flags & SIGN)
-	num = (short)num;
-    } else if (flags & SIGN)
-      num = va_arg(args, int);
-    else
-      num = va_arg(args, unsigned int);
-    str = number(str, num, base, field_width, precision, flags);
-  }
-  *str = '\0';
-  return str - buf;
-}*/
