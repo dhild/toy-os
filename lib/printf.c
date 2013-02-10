@@ -1,4 +1,4 @@
-#include <kernel/stdint.h>
+#include <stdint.h>
 #include <kernel/stdio.h>
 #include <kernel/string.h>
 #include <kernel/video.h>

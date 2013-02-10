@@ -1,4 +1,4 @@
-#include <kernel/stdint.h>
+#include <stdint.h>
 #include <kernel/string.h>
 #include <kernel/assembly.h>
 #include <kernel/logging.h>
@@ -33,32 +33,25 @@ namespace {
     IDTEntry entry[256];
   } IDT_table;
 
-  IDT_table IDT;
+  IDT_table* IDT;
 
-  static inline void lidt() {
+  static inline void get_idt() {
     struct {
       uint16_t length;
       uint64_t address;
     } __attribute__((__packed__)) IDTR;
 
-    IDTR.length = sizeof(IDT_table);
-    /* We want the address to be in the 'identity' paging area.
-     * We also know that this is within the first 1Gb of memory, physically.
-     */
-    IDTR.address = ((uint64_t)(&IDT)) & ((uint64_t)((1024 * 1024 * 1024) - 1));
+    asm volatile ("sidt (%0)" : : "p"(&IDTR) : "memory");
 
-    asm volatile ("lidt (%0)" : : "p"(&IDTR) : "memory");
+    IDT = (IDT_table*)IDTR.address;
   }
 
   uint64_t x2APIC_ID;
 }
 
 void interrupts::setup_interrupts() {
-  /* Mark all entries as nonexistent until we set them. */
-  memset(&IDT, 0, sizeof(IDT));
-
-  /* Load the IDT register. */
-  lidt();
+  /** Initialize our IDT pointer. */
+  get_idt();
 
   /* See if there is a local APIC */
   uint32_t eax, ebx, ecx, edx;

@@ -1,7 +1,7 @@
 #ifndef KERNEL_ASSEMBLY_H
 #define KERNEL_ASSEMBLY_H
 
-#include <kernel/stdint.h>
+#include <stdint.h>
 
 inline void cpuid(uint32_t id, uint32_t* eax, uint32_t* ebx, uint32_t* ecx, uint32_t* edx) {
   asm volatile ("cpuid" : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx) : "a"(id));

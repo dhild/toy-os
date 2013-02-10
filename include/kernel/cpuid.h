@@ -1,7 +1,7 @@
 #ifndef KERNEL_CPUID_H
 #define KERNEL_CPUID_H
 
-#include <kernel/stdint.h>
+#include <stdint.h>
 
 inline void cpuid(uint32_t* outputs
 

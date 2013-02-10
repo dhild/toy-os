@@ -1,7 +1,7 @@
 #ifndef PAGING_H
 #define PAGING_H
 
-#include <kernel/stdint.h>
+#include <stdint.h>
 #include <kernel/paging.h>
 
 namespace paging {

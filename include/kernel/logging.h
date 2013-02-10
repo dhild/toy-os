@@ -1,7 +1,7 @@
 #ifndef KERNEL_LOGGING_H
 #define KERNEL_LOGGING_H
 
-#include <kernel/stdint.h>
+#include <stdint.h>
 
 namespace log {
   

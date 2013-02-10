@@ -1,4 +1,4 @@
-#include <kernel/stdint.h>
+#include <stdint.h>
 #include <kernel/boot/addresses.h>
 #include <kernel/string.h>
 #include <kernel/video.h>

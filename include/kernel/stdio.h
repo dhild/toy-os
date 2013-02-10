@@ -1,8 +1,8 @@
 #ifndef KERNEL_STDIO_H
 #define KERNEL_STDIO_H
 
-#include <kernel/stdarg.h>
-#include <kernel/stddef.h>
+#include <stdarg.h>
+#include <stddef.h>
 #include <kernel/video.h>
 
 #ifdef __cplusplus

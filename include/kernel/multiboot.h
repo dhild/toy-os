@@ -1,7 +1,7 @@
 #ifndef KERNEL_MULTIBOOT_H
 #define KERNEL_MULTIBOOT_H
 
-#include <kernel/stdint.h>
+#include <stdint.h>
 
 #define MULTIBOOT_TAG_ALIGN                 8
 #define MULTIBOOT_TAG_TYPE_END              0

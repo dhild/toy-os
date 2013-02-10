@@ -1,4 +1,4 @@
-#include <kernel/stdint.h>
+#include <stdint.h>
 #include <kernel/stdlib.h>
 #include <kernel/string.h>
 #include "memory.h"
@@ -110,7 +110,7 @@ bool compactFromOrder(const size_t order) {
 
   PageList* next = &(blocks[order]);
 
-  while ((next->nextFree != NULL) && ((uint64_t)(next->nextFree) != NULL)) {
+  while ((next->nextFree != NULL) && ((next->nextFree) != NULL)) {
     if ((uint64_t)next->nextFree == ((uint64_t)(((PageList*)(next->nextFree))->nextFree) ^ BUDDY_PAGE_SIZE(order))) {
       insertFreePage((void*)next->nextFree, order + 1);
       compacted = true;

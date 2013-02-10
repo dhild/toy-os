@@ -1,8 +1,8 @@
 #ifndef KERNEL_STRING_H
 #define KERNEL_STRING_H
 
-#include <kernel/stdint.h>
-#include <kernel/stddef.h>
+#include <stdint.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {

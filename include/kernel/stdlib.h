@@ -1,7 +1,7 @@
 #ifndef KERNEL_STDLIB_H
 #define KERNEL_STDLIB_H
 
-#include <kernel/stddef.h>
+#include <stddef.h>
 
 void* malloc(size_t size);
 void* calloc(size_t num, size_t size);
