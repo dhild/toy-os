@@ -19,11 +19,20 @@ void test_mb_info(void* address) {
   }
 }
 
-void kmain(void* mb_info_address) {
+void initialize_screen() {
   clearScreen();
-  puts("kmain()\n");
+  printf("kmain()\n");
+
+  printf("Testing %%#x: %#x\n", 0xDEADBEEF);
+  printf("Testing %%p: %p\n", &kmain);
+  printf("Testing %%d: %d\n", -1234);
   
-  log::info("kmain", "Testing logging");
+  log::info(__FILE__, "Testing logging %%#x: %x, %%p: %p, %%d: %d", 0xCAFEBABE, &kmain, -1234);
+}
+
+void kmain(void* mb_info_address) {
+
+  initialize_screen();
 
   interrupts::setup_interrupts();
 
