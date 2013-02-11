@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+extern "C" void handle_page_fault_interrupt(uint64_t errorCode, void* address);
+
 namespace paging {
 
   typedef uint64_t PML4E;

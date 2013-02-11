@@ -34,6 +34,8 @@ void kmain(void* mb_info_address) {
 
   initialize_screen();
 
+  paging::setup_paging();
+
   interrupts::setup_interrupts();
 
   test_mb_info(mb_info_address);

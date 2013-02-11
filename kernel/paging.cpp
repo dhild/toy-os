@@ -1,7 +1,13 @@
 #include <kernel/kmain.h>
+#include <kernel/paging.h>
 #include "paging.h"
 
 using namespace paging;
+
+PML4T* paging::KernelPML4Table;
+PDPT* paging::KernelPDPTIdentity;
+PDPT* paging::KernelPDPTMapped;
+bool paging::PDPT1GbTablesAllowed;
 
 /*
 
@@ -91,7 +97,7 @@ using namespace paging;
 // Specific to 2Mb page tables:
 #define PAGING_PDE_FLAGS_PAGE_DIRTY      (((uint64_t)1)<<6)
 #define PAGING_PDE_FLAGS_TABLE_IGNORED_0 (((uint64_t)1)<<6)
-#define PAGING_PDE_FLAGS_PAGE            (((uint64_t)1)<<7)
+#define PAGING_PDE_FLAGS_2_MB_PAGE       (((uint64_t)1)<<7)
 #define PAGING_PDE_FLAGS_PAGE_GLOBAL     (((uint64_t)1)<<8)
 #define PAGING_PDE_FLAGS_TABLE_IGNORED_1 (((uint64_t)1)<<8)
 #define PAGING_PDE_FLAGS_IGNORED_0       (((uint64_t)1)<<9)
@@ -113,7 +119,7 @@ using namespace paging;
 // Specific to 1Gb page tables:
 #define PAGING_PDPTE_FLAGS_PAGE_DIRTY      (((uint64_t)1)<<6)
 #define PAGING_PDPTE_FLAGS_TABLE_IGNORED_0 (((uint64_t)1)<<6)
-#define PAGING_PDPTE_FLAGS_PAGE            (((uint64_t)1)<<7)
+#define PAGING_PDPTE_FLAGS_1_GB_PAGE       (((uint64_t)1)<<7)
 #define PAGING_PDPTE_FLAGS_PAGE_GLOBAL     (((uint64_t)1)<<8)
 #define PAGING_PDPTE_FLAGS_TABLE_IGNORED_1 (((uint64_t)1)<<8)
 #define PAGING_PDPTE_FLAGS_IGNORED_0       (((uint64_t)1)<<9)
@@ -150,12 +156,60 @@ using namespace paging;
   (PAGING_PML4E_FLAGS_RESERVED_0 | \
    PAGING_GLOBAL_RESERVED)
 
-namespace {
-  PML4T* KernelPML4Table;
-  PDPT* KernelPDPTIdentity;
-  PDPT* KernelPDPTMapped;
-  
-  bool PDPT1GbTablesAllowed;
+#define LINEAR_PML4_BITS 0xFF8000000000
+#define LINEAR_PDPT_BITS 0x007FC0000000
+#define LINEAR_PDT_BITS  0x00003FE00000
+#define LINEAR_PT_BITS   0x0000001FF000
+#define LINEAR_PML4_SHIFT 39
+#define LINEAR_PDP_SHIFT 30
+#define LINEAR_PD_SHIFT 21
+#define LINEAR_PT_SHIFT 12
+
+PDPT* pml4e_to_pdpt(PML4E pml4e) {
+  return (PDPT*)(PAGING_PML4E_TABLE_ADDRESS & (uint64_t)pml4);
+}
+
+PDT* pdpte_to_pdt(PDPTE pdpt) {
+  return (PDT*)(PAGING_PDPT_TABLE_ADDRESS & (uint64_t)pdpt);
+}
+
+PT* pdte_to_pt(PDTE pdt) {
+  return (PT*)(PAGING_PDT_TABLE_ADDRESS & (uint64_t)pdt);
+}
+
+void paging::getAddressInfo(void* address, PML4E* pml4e, PDPTE* pdpte, PDTE* pdte, PTE* pte) {
+  uint64_t index = ((uint64_t)address & LINEAR_PML4_BITS) >> LINEAR_PML4_SHIFT;
+  PML4E pml4e1 = KernelPML4Table->entry[index];
+
+  if (pml4e != NULL)
+    *pml4e = pml4e1;
+
+  PDPT* pdpt = pml4e_to_pdpt(pml4e1);
+  index = ((uint64_t)address & LINEAR_PDPT_BITS) >> LINEAR_PDPT_SHIFT;
+  PDPTE pdpte1 = pdpt->entry[index];
+
+  if (pdpte != NULL)
+    *pdpte = pdpte1;
+
+  if (pdpte1 & PAGING_PDPTE_FLAGS_1_GB_PAGE)
+    return;
+
+  PDT* pdt = pdpte_to_pdt(pdpte1);
+  index = ((uint64_t)address & LINEAR_PDT_BITS) >> LINEAR_PDT_SHIFT;
+  PML4E pdte1 = pdt->entry[index];
+
+  if (pdte != NULL)
+    *pdte = pdte1;
+
+  if (pdte1 & PAGING_PDE_FLAGS_2_MB_PAGE)
+    return;
+
+  if (pte == NULL)
+    return;
+
+  PT* pt = pdte_to_pt(pdte1);
+  index = ((uint64_t)address & LINEAR_PT_BITS) >> LINEAR_PT_SHIFT;
+  PTE pte1 = pt->entry[index];
 }
 
 void paging::setup_paging() {
@@ -179,9 +233,5 @@ void paging::setup_paging() {
 
   KernelPDPTIdentity = (PDPT*)((KernelPML4Table->entry[0]) & (PAGING_PDPTE_TABLE_ADDRESS | PAGING_CANNONICAL_BITS));
   KernelPDPTMapped = (PDPT*)((KernelPML4Table->entry[384]) & (PAGING_PDPTE_TABLE_ADDRESS | PAGING_CANNONICAL_BITS));
-}
-
-void allocate_kernel_page() {
-
 }
 

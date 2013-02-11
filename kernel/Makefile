@@ -4,7 +4,7 @@ include $(TOS_BASEMAKE)
 
 OBJS = kmain.o paging.o logging.o interrupts.o \
        multiboot.o console.o basicpaging.o \
-       idt.o interrupt_entries.o
+       idt.o interrupt_entries.o paging_interrupts.o
 
 OBJS := $(addprefix $(TOS_BUILDSUBDIR)/,$(OBJS))
 

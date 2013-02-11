@@ -6,6 +6,8 @@ section .text
 bits 64
 
 %macro savestackmods 0
+	push rbp
+	mov rbp, rsp
 	push r11
 	push r10
 	push r9
@@ -27,6 +29,7 @@ bits 64
 	pop r9
 	pop r10
 	pop r11
+	pop rbp
 %endmacro
 
 %macro savestackall 0
@@ -34,7 +37,6 @@ bits 64
 	push r14
 	push r13
 	push r12
-	push rbp
 	push rbx
 
 	savestackmods
@@ -44,7 +46,6 @@ bits 64
 	restorestackmods
 	
 	pop rbx
-	pop rbp
 	pop r12
 	pop r13
 	pop r14
@@ -68,7 +69,22 @@ general_protection_trap_gate:
 	iretq
 
 global page_fault_trap_gate
+extern handle_page_fault_interrupt
 page_fault_trap_gate:
+	;; Save stacks:
+	savestackmods
+
+	;; First parameter: the error code
+	mov rdi, qword [rbp + 8]
+	;; Second parameter: Fault address
+	mov rsi, cr2
+	mov rax, handle_page_fault_interrupt
+	call rax
+	
+	restorestackmods
+
+	;; Remove the error code from the stack:
+	add rsp, 8
 	iretq
 
 global machine_check_interrupt_gate

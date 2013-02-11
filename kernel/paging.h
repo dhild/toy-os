@@ -8,7 +8,12 @@ namespace paging {
 
   void setup_paging();
 
-  PML4T* setup_user_paging();
+  extern PML4T* KernelPML4Table;
+  extern PDPT* KernelPDPTIdentity;
+  extern PDPT* KernelPDPTMapped;
+  extern bool PDPT1GbTablesAllowed;
+
+  void getAddressInfo(void* address, PML4E* pml4e=NULL, PDPTE* pdpte=NULL, PDTE* pdte=NULL, PTE* pte=NULL);
 
 } /* namespace paging */
 
