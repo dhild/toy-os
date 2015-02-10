@@ -166,15 +166,15 @@ bool paging::PDPT1GbTablesAllowed;
 #define LINEAR_PT_SHIFT 12
 
 PDPT* pml4e_to_pdpt(PML4E pml4e) {
-  return (PDPT*)(PAGING_PML4E_TABLE_ADDRESS & (uint64_t)pml4);
+  return (PDPT*)(PAGING_PML4E_TABLE_ADDRESS & (uint64_t)pml4e);
 }
 
 PDT* pdpte_to_pdt(PDPTE pdpt) {
-  return (PDT*)(PAGING_PDPT_TABLE_ADDRESS & (uint64_t)pdpt);
+  return (PDT*)(PAGING_PDPTE_TABLE_ADDRESS & (uint64_t)pdpt);
 }
 
 PT* pdte_to_pt(PDTE pdt) {
-  return (PT*)(PAGING_PDT_TABLE_ADDRESS & (uint64_t)pdt);
+  return (PT*)(PAGING_PDE_TABLE_ADDRESS & (uint64_t)pdt);
 }
 
 void paging::getAddressInfo(void* address, PML4E* pml4e, PDPTE* pdpte, PDTE* pdte, PTE* pte) {
@@ -185,7 +185,7 @@ void paging::getAddressInfo(void* address, PML4E* pml4e, PDPTE* pdpte, PDTE* pdt
     *pml4e = pml4e1;
 
   PDPT* pdpt = pml4e_to_pdpt(pml4e1);
-  index = ((uint64_t)address & LINEAR_PDPT_BITS) >> LINEAR_PDPT_SHIFT;
+  index = ((uint64_t)address & LINEAR_PDPT_BITS) >> LINEAR_PDP_SHIFT;
   PDPTE pdpte1 = pdpt->entry[index];
 
   if (pdpte != NULL)
@@ -195,7 +195,7 @@ void paging::getAddressInfo(void* address, PML4E* pml4e, PDPTE* pdpte, PDTE* pdt
     return;
 
   PDT* pdt = pdpte_to_pdt(pdpte1);
-  index = ((uint64_t)address & LINEAR_PDT_BITS) >> LINEAR_PDT_SHIFT;
+  index = ((uint64_t)address & LINEAR_PDT_BITS) >> LINEAR_PD_SHIFT;
   PML4E pdte1 = pdt->entry[index];
 
   if (pdte != NULL)
