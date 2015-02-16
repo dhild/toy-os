@@ -1,6 +1,2 @@
-Higher half functionality is working.
+Starting over from a sane skeleton, thanks to "Sortie" over at https://gitorious.org/sortie/meaty-skeleton
 
-Kernel loads, printing and interrupts are enabled.
-
-C++ constructors and destructors are called in assembly.
-kmain() is the C++ main function.

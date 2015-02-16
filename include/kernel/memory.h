@@ -1,7 +1,0 @@
-#ifndef KERNEL_MEMORY_H
-#define KERNEL_MEMORY_H
-
-#define MIN_PAGE_BYTE_SIZE 4096
-#define BUDDY_MAX_ORDER 5
-
-#endif /* KERNEL_MEMORY_H */
