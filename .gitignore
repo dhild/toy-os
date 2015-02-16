@@ -1,9 +1,3 @@
-fd.img
-hd.img
-hd/
-bochs.log
-*.o
-*.d
-*.dep.inc
-*~
-build/
+*.iso
+isodir
+sysroot
