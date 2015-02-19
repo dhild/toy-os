@@ -10,6 +10,8 @@ export HOST=${HOST:-$("$( dirname "${BASH_SOURCE[0]}" )/default-host.sh")}
 
 export AR=${HOST}-ar
 export AS=${HOST}-as
+export LD=${HOST}-ld
+export CPP=${HOST}-cpp
 export CC="clang -v --target=${HOST} -march=x86-64"
 export CXX="clang++ -v --target=${HOST} -march=x86-64"
 if echo "$HOST" | grep -Eq -- 'x86_64-elf'; then
@@ -17,7 +19,6 @@ if echo "$HOST" | grep -Eq -- 'x86_64-elf'; then
 else
   export NASM=nasm
 fi
-export CPP="$HOST-cpp"
 
 export PREFIX=/usr
 export EXEC_PREFIX=$PREFIX

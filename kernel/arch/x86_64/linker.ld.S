@@ -41,6 +41,7 @@ SECTIONS
 	{
 		*(.data)
 		*(.gnu.linkonce.d*)
+                *(.debug*)
 	}
 
 	/* Read-write data (uninitialized) and stack */

@@ -12,10 +12,10 @@ EXEC_PREFIX?=$(PREFIX)
 BOOTDIR?=$(EXEC_PREFIX)/boot
 INCLUDEDIR?=$(PREFIX)/include
 
-CFLAGS:=$(CFLAGS) -ffreestanding -fbuiltin -Wall -Wextra
-CPPFLAGS:=$(CPPFLAGS) -D__is_myos_kernel -Iinclude
+CFLAGS:=$(CFLAGS) -ffreestanding -fbuiltin -Wall -Wextra -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow
+CPPFLAGS:=$(CPPFLAGS) -D__is_toyos_kernel -Iinclude
 LDFLAGS:=$(LDFLAGS)
-LIBS:=$(LIBS) -nostdlib -lk -lgcc
+LIBS:=$(LIBS) -nostdlib -lk -L../libc
 
 ARCHDIR:=arch/$(HOSTARCH)
 
@@ -55,7 +55,7 @@ $(ARCHDIR)/linker.ld: $(ARCHDIR)/linker.ld.S
 	$(CPP) $< -o $@ $(CPPFLAGS) -P -D__ASSEMBLY__ -DLINKERSCRIPT
 
 toy-os.kernel: $(OBJ_LINK_LIST) $(ARCHDIR)/linker.ld
-	$(CC) -T $(ARCHDIR)/linker.ld -o $@ $(CFLAGS) $(OBJ_LINK_LIST) $(LDFLAGS) $(LIBS)
+	$(LD) -T $(ARCHDIR)/linker.ld -o $@ $(OBJ_LINK_LIST) $(LDFLAGS) $(LIBS)
 
 %.o: %.c
 	$(CC) -c $< -o $@ $(CFLAGS) $(CPPFLAGS)
