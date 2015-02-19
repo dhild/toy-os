@@ -17,6 +17,7 @@ if echo "$HOST" | grep -Eq -- 'x86_64-elf'; then
 else
   export NASM=nasm
 fi
+export CPP="$HOST-cpp"
 
 export PREFIX=/usr
 export EXEC_PREFIX=$PREFIX
@@ -24,9 +25,10 @@ export BOOTDIR=/boot
 export LIBDIR=$EXEC_PREFIX/lib
 export INCLUDEDIR=$PREFIX/include
 
-export CFLAGS='-O2 -g -Wall -Werror -pedantic'
-export CXXFLAGS='--std=c++11'
+export CFLAGS='-O2 -g -Wall -Werror -pedantic -m64 -mcmodel=large'
+export CXXFLAGS='--std=c++11 -fno-rtti'
 export CPPFLAGS=''
+export NASMFLAGS="-Werror"
 
 # Configure the cross-compiler to use the desired system root.
 export CC="$CC --sysroot=\"$SYSROOT\""

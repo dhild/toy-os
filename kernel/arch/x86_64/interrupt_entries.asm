@@ -78,8 +78,9 @@ page_fault_trap_gate:
 	mov rdi, qword [rbp + 8]
 	;; Second parameter: Fault address
 	mov rsi, cr2
-	mov rax, handle_page_fault_interrupt
-	call rax
+        ;; TODO: implement.....
+	;; mov rax, handle_page_fault_interrupt
+	;; call rax
 	
 	restorestackmods
 

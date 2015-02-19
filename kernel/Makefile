@@ -51,17 +51,26 @@ all: toy-os.kernel
 
 .PHONY: all clean install install-headers install-kernel
 
+$(ARCHDIR)/linker.ld: $(ARCHDIR)/linker.ld.S
+	$(CPP) $< -o $@ $(CPPFLAGS) -P -D__ASSEMBLY__ -DLINKERSCRIPT
+
 toy-os.kernel: $(OBJ_LINK_LIST) $(ARCHDIR)/linker.ld
 	$(CC) -T $(ARCHDIR)/linker.ld -o $@ $(CFLAGS) $(OBJ_LINK_LIST) $(LDFLAGS) $(LIBS)
 
 %.o: %.c
-	$(CC) -c $< -o $@ -std=gnu11 $(CFLAGS) $(CPPFLAGS)
+	$(CC) -c $< -o $@ $(CFLAGS) $(CPPFLAGS)
+
+%.o: %.cpp
+	$(CXX) -c $< -o $@ $(CXXFLAGS) $(CFLAGS) $(CPPFLAGS)
 
 %.o: %.S
 	$(CC) -c $< -o $@ $(CFLAGS) $(CPPFLAGS)
 
+%.o: %.asm
+	$(NASM) $< -o $@
+
 clean:
-	rm -f toy-os.kernel $(OBJS) $(ALL_OUR_OBJS) *.o */*.o */*/*.o
+	rm -f toy-os.kernel $(ARCHDIR)/linker.ld $(OBJS) $(ALL_OUR_OBJS) *.o */*.o */*/*.o
 
 install: install-headers install-kernel
 
