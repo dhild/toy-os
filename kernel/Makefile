@@ -14,7 +14,7 @@ INCLUDEDIR?=$(PREFIX)/include
 
 CFLAGS:=$(CFLAGS) -ffreestanding -fbuiltin -Wall -Wextra -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow
 CPPFLAGS:=$(CPPFLAGS) -D__is_toyos_kernel -Iinclude
-LDFLAGS:=$(LDFLAGS)
+LDFLAGS:=$(LDFLAGS) -z max-page-size=0x1000
 LIBS:=$(LIBS) -nostdlib -lk -L../libc
 
 ARCHDIR:=arch/$(HOSTARCH)
