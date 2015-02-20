@@ -54,8 +54,11 @@ all: toy-os.kernel
 $(ARCHDIR)/linker.ld: $(ARCHDIR)/linker.ld.S
 	$(CPP) $< -o $@ $(CPPFLAGS) -P -D__ASSEMBLY__ -DLINKERSCRIPT
 
-toy-os.kernel: $(OBJ_LINK_LIST) $(ARCHDIR)/linker.ld
+toy-os.elf: $(OBJ_LINK_LIST) $(ARCHDIR)/linker.ld
 	$(LD) -T $(ARCHDIR)/linker.ld -o $@ $(OBJ_LINK_LIST) $(LDFLAGS) $(LIBS)
+
+toy-os.kernel: toy-os.elf
+	$(HOST)-objcopy --strip-debug toy-os.elf toy-os.kernel
 
 %.o: %.c
 	$(CC) -c $< -o $@ $(CFLAGS) $(CPPFLAGS)
@@ -70,7 +73,7 @@ toy-os.kernel: $(OBJ_LINK_LIST) $(ARCHDIR)/linker.ld
 	$(NASM) $< -o $@
 
 clean:
-	rm -f toy-os.kernel $(ARCHDIR)/linker.ld $(OBJS) $(ALL_OUR_OBJS) *.o */*.o */*/*.o
+	rm -f toy-os.kernel toy-os.elf $(ARCHDIR)/linker.ld $(OBJS) $(ALL_OUR_OBJS) *.o */*.o */*/*.o
 
 install: install-headers install-kernel
 

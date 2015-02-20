@@ -33,6 +33,7 @@ mbi_tag:
         dd 2                    ; Boot loader name
         dd 8                    ; Framebuffer info
 mbi_tag_end:
+        align 8
 framebuffer_tag:
         dw MULTIBOOT2_TAG_FRAMEBUFFER   ; Tag ID
         dw MULTIBOOT2_TAG_OPTIONAL      ; Optional
@@ -41,6 +42,7 @@ framebuffer_tag:
         dd 768
         dd 32
 framebuffer_tag_end:
+        align 8
 
         dw MULTIBOOT2_TAG_END           ; End Tag
         dw 0
@@ -53,11 +55,7 @@ TempStack:
 MultibootState:
         dd 0                    ; EAX
         dd 0                    ; EBX
-hang:
-	;; Halts the machine
-	hlt
-	jmp hang
-
+multiboot_entry:
 _start:
 	;; Keep interrupts disabled until we are set to handle them.
 	cli
@@ -100,64 +98,48 @@ _start:
 
 make_page_tables:
 	;; PML4
-	;; Entry 0, virtual address 0-0x8000000000
-	;; Identity mapping
+	;; Entry 0, virtual address 0 to 512GB
+	;; Identity mapping to physical 0 to 512GB
 	;; Flags: !Accessed | !PCD | !PWT | !User | Read/write | Present
 	mov edi, PML4Tables
 	mov eax, PDPTIdentity
 	mov al, 11b
 	mov [edi], eax
 
-	;; Entry 384, virtual address 0xFFFFC00000000000-0xFFFFC08000000000
-	;; Kernel-space mapping to 0-0x8000000000
+	;; Entry 511, virtual address (end - 512GB) to end
+	;; Kernel-space mapping to physical 0 to 512GB
 	;; Flags: !Accessed | !PCD | !PWT | !User | Read/write | Present
 	mov edi, PML4Tables
-	add edi, 0xC00
+	add edi, (511 * 8)
 	mov eax, PDPTKernel
 	mov al, 11b
 	mov [edi], eax
 
 	;; PDPTIdentity
-	;; Entry 0, virtual address 0-0x40000000
-	;; Identity mapping
-	;; Flags: !PS | !Dirty | !Accessed | !PCD | !PWT | !User | Read/write | Present
+	;; Entry 0, virtual address 0 to 1GB
+	;; Identity mapping of physical 0 to 1GB
+	;; Flags: !Global | PS | !Dirty | !Accessed | !PCD | !PWT | !User | Read/write | Present
 	mov edi, PDPTIdentity
-	mov eax, PDTIdentity
-	mov al, 11b
-	mov [edi], eax
-
-	;; PDTIdentity
-	;; Entry 0, virtual address 0-0x200000
-	;; Identity mapping
-	;; Flags: !PAT | !G | PS | !Dirty | !Accessed | !PCD | !PWT | !User | Read/write | Present
-	mov edi, PDTIdentity
-	xor eax, eax
-	mov al, 10000011b
+        xor eax, eax
+	mov ax, 0_1000_0011b
 	mov [edi], eax
 
 	;; PDPTKernel
-	;; Entry 0, virtual address 0xFFFFC00000000000-0xFFFFC00040000000
-	;; Kernel-space mapping to 0-0x40000000
-	;; Flags: !PS | !Dirty | !Accessed | !PCD | !PWT | !User | Read/write | Present
+	;; Entry 510, virtual address (end - 2GB) to (end - 1GB)
+	;; Kernel-space mapping to physical 0 to 1GB
+        ;; 1 GB page mapping.
+	;; Flags: Global | PS | !Dirty | !Accessed | !PCD | !PWT | !User | Read/write | Present
 	mov edi, PDPTKernel
-	mov eax, PDTKernel
-	mov al, 11b
+        add edi, (510 * 8)
+        xor eax, eax
+	mov ax, 1_1000_0011b
 	mov [edi], eax
 
-	;; PDTKernel
-	;; Entry 0, virtual address 0xFFFFC00000000000-0xFFFFC00000200000
-	;; Kernel-space mapping to 0-0x200000
-	;; Flags: !PAT | !G | PS | !Dirty | !Accessed | !PCD | !PWT | !User | Read/write | Present
-	mov edi, PDTKernel
-	xor eax, eax
-	mov al, 10000011b
-	mov [edi], eax
-
-	;; Entry 1, virtual address 0xFFFFC00000200000-0xFFFFC00000400000
-	;; Kernel-space mapping to 0x200000-0x400000
-	;; Flags: !PAT | !G | PS | !Dirty | !Accessed | !PCD | !PWT | !User | Read/write | Present
-	add eax, 0x200000
-	mov [edi+8], eax
+        ;; Entry 511, virtual address (end - 1GB) to end
+        ;; Kernel-space mapping to physical 1GB to 2GB
+        ;; 1 GB page mapping
+        add eax, (1024 * 1024 * 1024)
+        mov [edi+8], eax
 
 	ret
 
@@ -205,10 +187,6 @@ PML4Tables:
 	times 4096 db 0
 PDPTIdentity:
 	times 4096 db 0
-PDTIdentity:
-	times 4096 db 0
 PDPTKernel:
-	times 4096 db 0
-PDTKernel:
 	times 4096 db 0
 PTEnd:

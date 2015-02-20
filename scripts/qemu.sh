@@ -5,5 +5,4 @@ set -e
 
 export TRIPLET=$($( dirname "${BASH_SOURCE[0]}" )/target-triplet-to-arch.sh $HOST)
 
-qemu-system-$TRIPLET "$DISKIMG" -bios /usr/share/ovmf/OVMF.fd
-
+qemu-system-$TRIPLET -s -S "$DISKIMG" -bios /usr/share/ovmf/OVMF.fd
