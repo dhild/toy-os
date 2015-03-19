@@ -2,3 +2,5 @@
 sysroot
 *~
 bochs.log
+build
+nbproject
