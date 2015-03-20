@@ -6,7 +6,7 @@ set(KERNEL_ARCH_SRCS
   "${CMAKE_CURRENT_SOURCE_DIR}/idt.nasm"
   "${CMAKE_CURRENT_SOURCE_DIR}/interrupt_entries.nasm"
   "${CMAKE_CURRENT_SOURCE_DIR}/multiboot2.nasm"
-  "${CMAKE_CURRENT_SOURCE_DIR}/tty.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tty.cpp"
   
   PARENT_SCOPE
 )

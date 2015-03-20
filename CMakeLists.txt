@@ -50,7 +50,7 @@ option(TOY_OS_ENABLE_WERROR "Fail and stop if a warning is triggered." OFF)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -v")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -v")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -v -std=c++11")
 
 if ( TOY_OS_ENABLE_WARNINGS )
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wextra")
