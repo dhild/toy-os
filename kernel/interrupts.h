@@ -2,7 +2,7 @@
 #define INTERRUPTS_H
 
 namespace interrupts {
-  void setup_interrupts();
+void setup_interrupts();
 }
 
 #endif

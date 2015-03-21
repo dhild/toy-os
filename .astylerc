@@ -1,0 +1,23 @@
+# Braces on the same line:
+--style=attach
+#
+# 4 Spaces per indent, no tabs
+--indent=spaces=4
+#
+# Pad operators
+--pad-oper
+# Pad if, for, while, ...
+--pad-header
+# Pointers are at the types:
+--align-pointer=type
+--align-reference=type
+#
+# Brackets on one-line statements:
+--add-brackets
+#
+# Don't ever use tabs:
+--convert-tabs
+#
+# Maximum line length:
+--max-code-length=132
+--break-after-logical
