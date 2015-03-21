@@ -4,7 +4,3 @@ sysroot
 bochs.log
 build
 nbproject
-cmake_install.cmake
-CMakeCache.txt
-CMakeFiles/
-Makefile
