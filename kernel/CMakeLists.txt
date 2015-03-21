@@ -23,5 +23,5 @@ set_target_properties(kernel
   LINK_FLAGS "-z max-page-size=0x1000 -nostdlib -lk"
 )
 
-target_link_libraries(kernel archkernel crtfiles)
+target_link_libraries(kernel archkernel)
 

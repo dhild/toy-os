@@ -24,17 +24,12 @@ set(TOY_OS_TARGET_ARCH "x86_64"
 set(TOY_OS_TARGET_TRIPLE "x86_64-pc-elf" CACHE STRING
   "Default target for which TOY_OS will generate code." )
 set(CMAKE_SYSTEM_NAME Linux)
-set(CMAKE_C_COMPILER "clang -v -march=x86-64")
+set(CMAKE_C_COMPILER clang)
 set(CMAKE_C_COMPILER_TARGET ${TOY_OS_TARGET_TRIPLE})
-set(CMAKE_CXX_COMPILER "clang++ -march=x86-64")
+set(CMAKE_CXX_COMPILER clang++)
 set(CMAKE_CXX_COMPILER_TARGET ${TOY_OS_TARGET_TRIPLE})
-set(RULE_LAUNCH_LINK "lld -flavor gnu")
-execute_process(COMMAND gcc ${CMAKE_C_FLAGS} ${CMAKE_LINK_FLAGS}
-  -print-file-name=crtbegin.o
-  OUTPUT_VARIABLE COMPILER_CRTBEGIN)
-execute_process(COMMAND gcc ${CMAKE_C_FLAGS} ${CMAKE_LINK_FLAGS}
-  -print-file-name=crtend.o
-  OUTPUT_VARIABLE COMPILER_CRTEND)
+set(CMAKE_LINKER lld)
+set(CMAKE_LINKER_TARGET ${TOY_OS_TARGET_TRIPLE})
 
 set(TOY_OS_DISK_DIR "${TOY_OS_BINARY_DIR}/disk" CACHE STRING
    "Installation directory for the system.")
@@ -57,8 +52,8 @@ option(TOY_OS_ENABLE_PEDANTIC "Compile with pedantic enabled." ON)
 option(TOY_OS_ENABLE_WERROR "Fail and stop if a warning is triggered." OFF)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -v -m64 -mcmodel=large")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -v -fno-rtti -m64 -mcmodel=large -std=c++11")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -v -march=x86-64 -m64 -mcmodel=large")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -v -march=x86-64 -fno-rtti -m64 -mcmodel=large -std=c++11")
 
 if ( TOY_OS_ENABLE_WARNINGS )
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wextra")
