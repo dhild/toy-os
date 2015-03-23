@@ -70,5 +70,5 @@ endif ( TOY_OS_ENABLE_WERROR )
 
 include_directories("libc/include")
 
-add_subdirectory(kernel)
 add_subdirectory(libc)
+add_subdirectory(kernel)

@@ -13,15 +13,15 @@ set(CMAKE_C_STANDARD_LIBRARIES "")
 add_subdirectory(${KERNEL_ARCH_DIR})
 add_subdirectory(kernel)
 
-add_executable(kernel
-  $<TARGET_OBJECTS:kernelCommon>
+add_executable(kernel.elf
+  $<TARGET_OBJECTS:kernelmain>
 )
 
-set_target_properties(kernel
+set_target_properties(kernel.elf
   PROPERTIES
   SUFFIX ""
-  LINK_FLAGS "-z max-page-size=0x1000 -nostdlib -lk"
+  LINK_FLAGS "-z max-page-size=0x1000 -nostdlib"
 )
 
-target_link_libraries(kernel archkernel)
+target_link_libraries(kernel.elf archkernel kernel_libc)
 

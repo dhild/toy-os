@@ -1,3 +1,3 @@
-add_library(kernelCommon OBJECT
+add_library(kernelmain OBJECT
   kernel.c
 )

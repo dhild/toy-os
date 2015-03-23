@@ -1,3 +1,9 @@
-set(LIBC_ARCH_DIR "arch/${TOY_OS_TARGET_ARCH}")
+add_subdirectory(stdio)
+add_subdirectory(stdlib)
+add_subdirectory(string)
 
-include_directories("include")
+add_library(kernel_libc
+  $<TARGET_OBJECTS:libc_stdio>
+  $<TARGET_OBJECTS:libc_stdlib>
+  $<TARGET_OBJECTS:libc_string>
+)

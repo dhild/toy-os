@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <kernel/tty.h>
 #include <kernel/vga.h>
 
 size_t terminal_row;
