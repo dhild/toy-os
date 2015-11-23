@@ -1,6 +1,7 @@
 set architecture i386:x86-64:intel
-symbol-file kernel/toy-os.elf
-target remote localhost:1234
-break *0x1000d0
-break *0xffffffff801061a0
+target remote | qemu-system-x86_64 -S -gdb stdio -m 2048 -drive file=disk.img,format=raw -bios bios.bin
+symbol-file build/kernel/kernel.elf
+file build/kernel/kernel.elf
+break *0x00000000001010c0
+break kernel_main
 continue

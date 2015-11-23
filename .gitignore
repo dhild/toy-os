@@ -1,6 +1,7 @@
-*.img
-sysroot
 *~
-bochs.log
-build
-nbproject
+*.img
+bios.bin
+/build
+/boot
+/disk
+

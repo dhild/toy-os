@@ -7,9 +7,9 @@ section .multiboot2
 bits 32
 
 	;; setting up the Multiboot 2 header - see GRUB docs for details
-	MULTIBOOT2_MAGIC             equ  0xe85250d6
-        MULTIBOOT2_ARCHITECTURE_I386 equ  0
-        MULTIBOOT2_HEADER_SIZE       equ  (MultibootHeaderEnd - MultibootHeader)
+;	MULTIBOOT2_MAGIC             equ  0xe85250d6
+;        MULTIBOOT2_ARCHITECTURE_I386 equ  0
+;        MULTIBOOT2_HEADER_SIZE       equ  (MultibootHeaderEnd - MultibootHeader)
         MULTIBOOT2_TAG_END           equ  0
         MULTIBOOT2_TAG_MBI_REQUEST   equ  1
         MULTIBOOT2_TAG_ADDRESS       equ  2
@@ -18,11 +18,11 @@ bits 32
         MULTIBOOT2_TAG_OPTIONAL      equ  1
 
 	align 8
-MultibootHeader:
-	dd MULTIBOOT2_MAGIC
-        dd MULTIBOOT2_ARCHITECTURE_I386
-	dd MULTIBOOT2_HEADER_SIZE
-        dd -(MULTIBOOT2_MAGIC + MULTIBOOT2_ARCHITECTURE_I386 + MULTIBOOT2_HEADER_SIZE)
+;MultibootHeader:
+;	dd MULTIBOOT2_MAGIC
+;        dd MULTIBOOT2_ARCHITECTURE_I386
+;	dd MULTIBOOT2_HEADER_SIZE
+;        dd -(MULTIBOOT2_MAGIC + MULTIBOOT2_ARCHITECTURE_I386 + MULTIBOOT2_HEADER_SIZE)
 
 mbi_tag:
         dw MULTIBOOT2_TAG_MBI_REQUEST
@@ -83,11 +83,11 @@ _start:
 
 	mov ecx, 0xC0000080	; 4. Enable IA-32e mode by setting IA32_EFER.LME = 1.
 	rdmsr
-	or eax, 0x00000100
+	or eax, (1 << 8)
 	wrmsr
 
 	mov eax, cr0		; 5. Enable paging, bit 31 of cr0
-	or eax, 0x80000000
+	or eax, (1 << 31)
 	mov cr0, eax
 
 	;;  The change from compatibility to 64-bit mode, we need a fresh jump

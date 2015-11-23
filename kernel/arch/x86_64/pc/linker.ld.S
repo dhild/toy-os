@@ -1,4 +1,5 @@
 #include "addresses.h"
+
 /* The bootloader will look at this image and start execution at the symbol
    designated at the entry point. */
 ENTRY(_start)
@@ -9,10 +10,9 @@ SECTIONS
 {
 	. = KERNEL_PHYSICAL_BASE;
 
-	/* First put the multiboot header, as it is required to be put very early
-	   early in the image or the bootloader won't recognize the file format. */
 	.early BLOCK(4K) : AT(KERNEL_PHYSICAL_BASE)
 	{
+                *(.multiboot2_signature)
 		*(.multiboot2)
 	}
         

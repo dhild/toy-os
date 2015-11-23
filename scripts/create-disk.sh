@@ -24,6 +24,7 @@ mkdir "$SYSROOT"
 sudo mount $LOOP1 "$SYSROOT"
 
 echo "Installing Grub to $SYSROOT"
+sleep 5
 
 cat > "$OSDIR/device.map" << EOF
 (hd0) $LOOP0
@@ -35,8 +36,8 @@ sudo grub-install --root-directory="$SYSROOT" \
                   --no-floppy \
                   --grub-mkdevicemap="$SYSROOT/boot/grub/device.map" \
                   --target=i386-pc \
-                  -d ~/.local/lib/grub/i386-pc \
                   $LOOP0
+#                  -d ~/.local/lib/grub/i386-pc \
 
 sync
 
@@ -45,6 +46,8 @@ sudo chown -hR $USER "$SYSROOT/boot"
 sudo chown -hR $USER "$SYSROOT/usr"
 
 cat > "$SYSROOT/boot/grub/grub.cfg" << EOF
+set default="toy-os"
+set timeout=1
 menuentry "toy-os" {
 	multiboot2 /boot/toy-os.kernel
         boot

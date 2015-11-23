@@ -78,6 +78,7 @@
 #define MULTIBOOT_CONSOLE_FLAGS_EGA_TEXT_SUPPORTED 2
 
 #ifndef ASM_FILE
+#ifdef DECLARE_MULTIBOOT_STRUCTS
 
 typedef unsigned char       multiboot_uint8_t;
 typedef unsigned short      multiboot_uint16_t;
@@ -339,6 +340,8 @@ struct multiboot_tag_efi_mmap {
     multiboot_uint32_t descr_vers;
     multiboot_uint8_t efi_mmap[0];
 };
+
+#endif /* DECLARE_MULTIBOOT_STRUCTS */
 
 #endif /* ! ASM_FILE */
 
