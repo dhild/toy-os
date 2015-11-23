@@ -1,3 +1,10 @@
+Toy OS project
+==============
+
+
+Setup Information
+-----------------
+
 Arch linux ISO:
 
 magnet:?xt=urn:btih:2ca62704bc6f0d23581ca3ed6eca611431b7a4c1&dn=archlinux-2015.11.01-dual.iso&tr=udp%3A%2F%2Ftracker.archlinux.org%3A6969&tr=http%3A%2F%2Ftracker.archlinux.org%3A6969%2Fannounce
@@ -46,4 +53,5 @@ mkdir -p boot
 mkdir -p disk
 sudo mount $LOOP0 boot
 sudo mount $LOOP1 disk
+
 
