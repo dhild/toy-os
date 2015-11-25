@@ -1,10 +1,9 @@
 add_library(archkernel
+  setup_long_mode.nasm
+  setup_gdt.nasm
+  setup_idt.nasm
+  setup_paging.nasm
   crti.nasm
   crtn.nasm
-  entry64.nasm
-  idt.nasm
-  interrupt_entries.nasm
-  multiboot2.nasm
-  multiboot_signature.cpp
 )
 

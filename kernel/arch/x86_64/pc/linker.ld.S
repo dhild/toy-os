@@ -9,11 +9,19 @@ ENTRY(_start)
 SECTIONS
 {
 	. = KERNEL_PHYSICAL_BASE;
+        kernel_physical_start = .          ;
+        kernel_start = KERNEL_VIRTUAL_BASE ;
+        kernel_virtual_offset = (kernel_start - kernel_physical_start) ;
 
-	.early BLOCK(4K) : AT(KERNEL_PHYSICAL_BASE)
+        .header_signature : AT(KERNEL_PHYSICAL_BASE)
+        {
+               header_signature_addr = . ;
+                *(.header_signature)
+        }
+        
+	.text_early BLOCK(4K) :
 	{
-                *(.multiboot2_signature)
-		*(.multiboot2)
+                *(.text_early)
 	}
         
 	/* Higher-half kernel */
@@ -43,14 +51,20 @@ SECTIONS
 		*(.gnu.linkonce.d*)
 	}
 
-	/* Read-write data (uninitialized) and stack */
+	/* Read-write data (uninitialized) */
 	.bss BLOCK(4K) : AT(ADDR(.bss) - KERNEL_VIRTUAL_BASE)
 	{
 		*(COMMON)
 		*(.bss)
 		*(.gnu.linkonce.b*)
+        
+                /* Stack is virtually located before the kernel */
+                stack_physical_start = (. - kernel_virtual_offset) ;
+                . += (4 * 4096) ;
+                stack_physical_end = (. - kernel_virtual_offset) ;
 	}
 
-	/* The compiler may produce other sections, put them in the proper place in
-	   in this file, if you'd like to include them in the final kernel. */
+        kernel_end = .          ;
+        kernel_size = kernel_end - KERNEL_VIRTUAL_BASE ;
+        kernel_physical_end = . - KERNEL_VIRTUAL_BASE + kernel_physical_start ;
 }

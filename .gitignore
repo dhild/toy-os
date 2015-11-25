@@ -4,4 +4,4 @@ bios.bin
 /build
 /boot
 /disk
-
+/.gdbinit
