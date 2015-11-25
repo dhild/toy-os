@@ -27,14 +27,13 @@ livecd:# grub-install --boot-directory=/mnt/boot --efi-directory=/mnt/efi /dev/s
 livecd:# umount /mnt/efi
 livecd:# umount /mnt/boot
 
-qemu-system-x86_64 -hda disk.img -m 3048 -bios [path to OVMF.fd]
+qemu-system-x86_64 -hda disk.img -m 2048 -bios [path to OVMF.fd]
 
     in EFI shell:
-    edit startup.nsh
-
-    FS0:\EFI\arch\grubx64.efi
-    Ctrl+S, Enter, Ctrl+Q
-
+    FS0:
+    cd EFI
+    mkdir boot
+    cp arch\grubx64.efi boot\bootx64.efi
 
 fdisk disk.img
     p -> EFI partition -> start sector (2048) * 512 = 1048576
@@ -53,5 +52,31 @@ mkdir -p boot
 mkdir -p disk
 sudo mount $LOOP0 boot
 sudo mount $LOOP1 disk
+
+
+sudo nano boot/grub/grub.cfg
+
+---- grub.cfg
+set default="toy-os"
+set timeout=1
+
+insmod efi_gop
+insmod efi_uga
+insmod font
+
+if loadfont ${prefix}/fonts/unicode.pf2
+then
+    insmod gfxterm
+    set gfxmode=auto
+    set gfxpayload=keep
+    terminal_output gfxterm
+fi
+
+menuentry "toy-os" {
+	multiboot (hd0,gpt2)/kernel.bin
+        boot
+}
+---- end grub.cfg
+
 
 
