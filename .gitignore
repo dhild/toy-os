@@ -5,3 +5,5 @@ bios.bin
 /boot
 /disk
 /.gdbinit
+/bochs.log
+/bochs-debug.log
