@@ -7,3 +7,4 @@ bios.bin
 /.gdbinit
 /bochs.log
 /bochs-debug.log
+/.idea
