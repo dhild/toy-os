@@ -11,28 +11,30 @@ set(TOY_OS_VERSION_PATCH 1)
 
 set(PACKAGE_VERSION "${TOY_OS_VERSION_MAJOR}.${TOY_OS_VERSION_MINOR}.${TOY_OS_VERSION_PATCH}")
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-set(TOY_OS_MAIN_SRC_DIR     ${CMAKE_CURRENT_SOURCE_DIR}  )
-set(TOY_OS_BINARY_DIR       ${CMAKE_CURRENT_BINARY_DIR}  )
+set(TOY_OS_MAIN_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(TOY_OS_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
 set(BUILD_SHARED_LIBS OFF)
 
 set(TOY_OS_TARGET_ARCH "x86_64"
-  CACHE STRING "Set arch to use for TOY_OS.")
+        CACHE STRING "Set arch to use for TOY_OS.")
 set(TOY_OS_TARGET_PLATFORM "pc"
-  CACHE STRING "Set platform to use for TOY_OS.")
+        CACHE STRING "Set platform to use for TOY_OS.")
 set(TOY_OS_TARGET_TRIPLE "x86_64-pc-elf" CACHE STRING
-  "Default target for which TOY_OS will generate code." )
+        "Default target for which TOY_OS will generate code.")
 set(CMAKE_C_COMPILER_TARGET ${TOY_OS_TARGET_TRIPLE})
 set(CMAKE_CXX_COMPILER_TARGET ${TOY_OS_TARGET_TRIPLE})
 set(CMAKE_LINKER ld)
 set(CMAKE_LINKER_TARGET ${TOY_OS_TARGET_TRIPLE})
 
 set(TOY_OS_DISK_DIR "${TOY_OS_BINARY_DIR}/build/disk" CACHE STRING
-   "Installation directory for the system.")
+        "Installation directory for the system.")
 set(TOY_OS_SYSROOT_DIR "${TOY_OS_BINARY_DIR}/build/sysroot" CACHE STRING
-   "Sysroot directory for the system.")
+        "Sysroot directory for the system.")
 
 set(CMAKE_STAGING_PREFIX ${TOY_OS_DISK_DIR})
 set(CMAKE_INSTALL_PREFIX ${TOY_OS_DISK_DIR})
