@@ -8,3 +8,4 @@ bios.bin
 /bochs.log
 /bochs-debug.log
 /.idea
+/sysroot
