@@ -64,7 +64,7 @@ then
 fi
 
 menuentry "toy-os" {
-	multiboot (hd0,gpt1)/kernel.bin
+	multiboot (hd0,gpt2)/kernel.bin
         boot
 }
 EOF
