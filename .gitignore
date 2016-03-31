@@ -1,11 +1,9 @@
 *~
 *.img
-bios.bin
 /build
-/boot
-/disk
 /.gdbinit
 /bochs.log
 /bochs-debug.log
 /.idea
 /sysroot
+/OVMF.fd
