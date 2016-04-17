@@ -1,7 +1,7 @@
 global _start:function  	; making entry point visible to linker
 global cleanup_32:function
-extern GDT, CODE_SEG_32, DATA_SEG, CODE_SEG_64
-extern setup_gdt, setup_idt, setup_paging
+extern GDTR, GDT, CODE_SEG_32, DATA_SEG, CODE_SEG_64
+extern setup_idt, setup_paging
 extern fixup_gdtr, fixup_idtr, fixup_paging
 extern kernel_start, kernel_physical_start, kernel_physical_end
 extern header_signature_addr, stack_physical_end
@@ -48,9 +48,7 @@ setupLongMode:
     mov dword [ebp], eax
     mov dword [ebp + 4], ebx
 
-    ;; Grub should have left us with at least one call's worth of stack.
-    ;; This should be a fairly local call anyways.
-    call setup_gdt
+    lgdt [GDTR]
 
     mov eax, DATA_SEG
     mov ds, eax
@@ -75,9 +73,9 @@ hosted_gdt:
 
     ;; Set up for 64-bit mode
     ; 1. Disable paging, bit 31 of cr0
-;    mov eax, cr0
-;    and eax, 0x7FFFFFFF
-;    mov cr0, eax
+    mov eax, cr0
+    and eax, 0x7FFFFFFF
+    mov cr0, eax
 
     ; 2. Enable PAE, 6th bit of cr4
     mov eax, cr4

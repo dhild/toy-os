@@ -1,5 +1,4 @@
-global GDT, CODE_SEG_32, DATA_SEG, CODE_SEG_64
-global setup_gdt:function
+global GDTR, GDT, CODE_SEG_32, DATA_SEG, CODE_SEG_64
 global fixup_gdtr:function
 bits 32
 section .text_early
@@ -67,10 +66,10 @@ section .text_early
 
 %define FLAG_G_4k (1 << 15)
 
-%define FLAGS_COMMON_32 (FLAG_USER | FLAG_DPL0 | FLAG_PRESENT | FLAG_32 | FLAG_G_4k)
-%define FLAGS_CODE_32 (FLAG_CODE | FLAGS_COMMON_32)
-%define FLAGS_DATA_32 (FLAG_DATA | FLAGS_COMMON_32)
-%define FLAGS_CODE_64 (FLAG_USER | FLAG_DPL0 | FLAG_PRESENT | FLAG_G_4k | FLAG_CODE)
+%define FLAGS_COMMON (FLAG_USER | FLAG_DPL0 | FLAG_PRESENT | FLAG_G_4k)
+%define FLAGS_CODE_32 (FLAG_CODE | FLAGS_COMMON | FLAG_32)
+%define FLAGS_DATA_32 (FLAG_DATA | FLAGS_COMMON | FLAG_32)
+%define FLAGS_CODE_64 (FLAG_CODE | FLAGS_COMMON | FLAG_LONG)
 
 ;; 1 = FLAGS, 2 = BASE, 3 = LIMIT
 %macro GDTENTRY 3
@@ -98,10 +97,6 @@ GDTR:
     dw (GDTEND - GDT - 1)
     dq GDT ;; Ignored if not in long mode
 
-setup_gdt:
-    lgdt[GDTR]
-    ret
-
 bits 64
 fixup_gdtr:
     mov rax, GDT
@@ -109,6 +104,6 @@ fixup_gdtr:
 
     mov qword [GDTR + 2], rax
 
-    lgdt[GDTR]
+    lgdt [GDTR]
 
     ret
