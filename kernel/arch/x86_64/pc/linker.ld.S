@@ -9,19 +9,19 @@ ENTRY(_start)
 SECTIONS
 {
 	. = KERNEL_PHYSICAL_BASE;
-        kernel_physical_start = .          ;
-        kernel_start = KERNEL_VIRTUAL_BASE ;
-        kernel_virtual_offset = (kernel_start - kernel_physical_start) ;
+    kernel_physical_start = .          ;
+    kernel_start = KERNEL_VIRTUAL_BASE ;
+    kernel_virtual_offset = (kernel_start - kernel_physical_start) ;
 
-        .header_signature : AT(KERNEL_PHYSICAL_BASE)
-        {
-               header_signature_addr = . ;
-                *(.header_signature)
-        }
-        
+    .header_signature : AT(KERNEL_PHYSICAL_BASE)
+    {
+        header_signature_addr = . ;
+        *(.header_signature)
+    }
+
 	.text_early BLOCK(4K) :
 	{
-                *(.text_early)
+        *(.text_early)
 	}
         
 	/* Higher-half kernel */
@@ -58,13 +58,13 @@ SECTIONS
 		*(.bss)
 		*(.gnu.linkonce.b*)
         
-                /* Stack is virtually located before the kernel */
-                stack_physical_start = (. - kernel_virtual_offset) ;
-                . += (4 * 4096) ;
-                stack_physical_end = (. - kernel_virtual_offset) ;
+        /* Stack is virtually located before the kernel */
+        stack_physical_start = (. - kernel_virtual_offset) ;
+        . += (4 * 4096) ;
+        stack_physical_end = (. - kernel_virtual_offset) ;
 	}
 
-        kernel_end = .          ;
-        kernel_size = kernel_end - KERNEL_VIRTUAL_BASE ;
-        kernel_physical_end = . - KERNEL_VIRTUAL_BASE + kernel_physical_start ;
+    kernel_end = .          ;
+    kernel_size = kernel_end - KERNEL_VIRTUAL_BASE ;
+    kernel_physical_end = . - KERNEL_VIRTUAL_BASE + kernel_physical_start ;
 }

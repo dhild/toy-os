@@ -1,7 +1,6 @@
 *~
 *.img
 /build
-/.gdbinit
 /bochs.log
 /bochs-debug.log
 /.idea
