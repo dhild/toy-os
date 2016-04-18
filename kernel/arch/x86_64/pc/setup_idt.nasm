@@ -19,7 +19,8 @@ section .text_early
 ;; 1 = ISR number
 %macro ISR 1
 isr%1:
-    jmp $
+    mov dx, %1
+    jmp isr%1
 %endmacro
 
 ISRS:

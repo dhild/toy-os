@@ -3,10 +3,12 @@ global cleanup_32:function
 extern GDTR, GDT, CODE_SEG_32, DATA_SEG, CODE_SEG_64
 extern setup_idt, setup_paging
 extern fixup_gdtr, fixup_idtr, fixup_paging
-extern kernel_start, kernel_physical_start, kernel_physical_end
+extern kernel_start, kernel_end, kernel_physical_start, kernel_physical_end
 extern header_signature_addr, stack_physical_end
 extern kernel_main
 bits 32
+
+%define KERNEL_VIRTUAL_BASE 0xffffffff80000000
 
 section .header_signature
 
@@ -81,8 +83,18 @@ Multiboot2Header:
     dd 0x100000000 - (MULTIBOOT2_HEADER_MAGIC + MULTIBOOT_ARCHITECTURE_I386 + (Multiboot2HeaderEnd - Multiboot2Header))
 
 align MULTIBOOT_TAG_ALIGN
+TagFB:
+    dw MULTIBOOT_HEADER_TAG_FRAMEBUFFER
+    dw MULTIBOOT_HEADER_TAG_OPTIONAL
+    dd (.end - TagFB)
+    dd 1024     ; width
+    dd 768      ; height
+    dd 32       ; depth
+.end:
+
+align MULTIBOOT_TAG_ALIGN
 TagEnd:
-    dw MULTIBOOT_TAG_TYPE_END
+    dw MULTIBOOT_HEADER_TAG_END
     dw 0
     dd (.end - TagEnd)
 .end:
@@ -91,10 +103,15 @@ align MULTIBOOT_TAG_ALIGN
 Multiboot2HeaderEnd:
 
 
+Multiboot2SaveRegs:
+.eax:
+    dd 0
+.ebx:
+    dd 0
+
 section .text_early
 
 _start:
-setupLongMode:
     ;; Keep interrupts disabled until we are set to handle them.
     cli
 
@@ -119,6 +136,12 @@ hosted_gdt:
     cmp eax, MULTIBOOT2_BOOTLOADER_MAGIC
     jne fail2boot
 
+    mov dword [Multiboot2SaveRegs.eax], eax
+
+.copy_mb2_to_safe:
+
+    mov dword [Multiboot2SaveRegs.ebx], kernel_physical_end
+
     mov edi, kernel_physical_end
     mov esi, ebx            ; Address of multiboot2 structure
     mov ecx, dword [ebx]    ; Size of multiboot2 tags, round up
@@ -128,36 +151,40 @@ hosted_gdt:
     cld
     rep movsd               ; Copy multiboot2 tags to end of kernel
 
-    add esi, 8
-    push esi
+    mov ebx, edi
+    add ebx, 8              ; Make sure the paging routine starts AFTER the multiboot structure
 
-    call setup_idt
-
-    ; Initialize paging. First safe address is in ebx at call, PML4 address is in ebx after return
-    pop ebx
-    call setup_paging
-
+setupLongMode:
     ;; Set up for 64-bit mode
-    ; 1. Disable paging, bit 31 of cr0
+
+    ; 1. Setup an IDT (preserve ebx for paging routine)
+    push ebx
+    call setup_idt
+    pop ebx
+
+    ; 2. Disable paging, bit 31 of cr0
     mov eax, cr0
     and eax, 0x7FFFFFFF
     mov cr0, eax
 
-    ; 2. Enable PAE, 6th bit of cr4
+    ; 3. Initialize paging tables. First safe address is in ebx at call, PML4 address is in ebx after return
+    call setup_paging
+
+    ; 4. Load cr3 with the physical address of the page table
+    mov cr3, ebx
+
+    ; 5. Enable PAE, 6th bit of cr4
     mov eax, cr4
     or eax, 0010_0000b
     mov cr4, eax
 
-    ; 3. Load cr3 with the physical address of the page table
-    mov cr3, ebx
-
-    ; 4. Enable IA-32e mode by setting IA32_EFER.LME = 1.
+    ; 6. Enable IA-32e mode by setting IA32_EFER.LME = 1.
     mov ecx, 0xC0000080
     rdmsr
     or eax, (1 << 8)
     wrmsr
 
-    ; 5. Enable paging, bit 31 of cr0
+    ; 7. Enable paging, bit 31 of cr0
     mov eax, cr0
     or eax, (1 << 31)
     mov cr0, eax
@@ -170,7 +197,7 @@ bits 64
 
 cleanup_32:
     ;; Jump to the higher-half address:
-    mov rax, 0xffffffff80000000
+    mov rax, KERNEL_VIRTUAL_BASE
     add rax, cleanup_64
     jmp rax
 
@@ -190,6 +217,14 @@ cleanup_64:
     call fixup_paging
 
     ; Call the kernel's main entry
+    xor rdi, rdi
+    xor rsi, rsi
+    mov rax, KERNEL_VIRTUAL_BASE
+    add rax, Multiboot2SaveRegs.eax
+    mov edi, dword [rax]
+    add rax, 4
+    mov esi, dword [rax]
+    add rax, KERNEL_VIRTUAL_BASE
     mov rax, kernel_main
     call rax
 

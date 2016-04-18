@@ -5,4 +5,5 @@ add_library(archkernel
         setup_paging.nasm
         crti.nasm
         crtn.nasm
+        addresses.h
         )
