@@ -34,6 +34,7 @@ MultibootHeader:
 
 
 %define MULTIBOOT2_HEADER_MAGIC         0xe85250d6
+%define MULTIBOOT2_BOOTLOADER_MAGIC     0x36d76289
 %define MULTIBOOT_INFO_ALIGN            0x00000008
 %define MULTIBOOT_TAG_ALIGN                  8
 %define MULTIBOOT_TAG_TYPE_END               0
@@ -92,41 +93,48 @@ Multiboot2HeaderEnd:
 
 section .text_early
 
-;; Structure to preserve Multiboot flags:
-MultibootState:
-    dd 0 ; EAX
-    dd 0 ; EBX
-
 _start:
 setupLongMode:
     ;; Keep interrupts disabled until we are set to handle them.
     cli
 
-    mov ebp, MultibootState
-    mov dword [ebp], eax
-    mov dword [ebp + 4], ebx
-
     lgdt [GDTR]
 
-    mov eax, DATA_SEG
-    mov ds, eax
-    mov es, eax
-    mov fs, eax
-    mov gs, eax
-    mov ss, eax
+    mov edx, DATA_SEG
+    mov ds, edx
+    mov es, edx
+    mov fs, edx
+    mov gs, edx
+    mov ss, edx
 
     mov esp, stack_physical_end
     sub esp, 8
     mov ebp, esp
-    
+
     ;; Reload the code segment
     jmp CODE_SEG_32:hosted_gdt
 
 hosted_gdt:
 
+    cmp eax, MULTIBOOT2_BOOTLOADER_MAGIC
+    jne fail2boot
+
+    mov edi, kernel_physical_end
+    mov esi, ebx            ; Address of multiboot2 structure
+    mov ecx, dword [ebx]    ; Size of multiboot2 tags, round up
+    add ecx, 3
+    shr ecx, 2
+
+    cld
+    rep movsd               ; Copy multiboot2 tags to end of kernel
+
+    add esi, 8
+    push esi
+
     call setup_idt
 
-    ; Initialize paging. PML4 address is in ebx after return
+    ; Initialize paging. First safe address is in ebx at call, PML4 address is in ebx after return
+    pop ebx
     call setup_paging
 
     ;; Set up for 64-bit mode
@@ -158,11 +166,10 @@ hosted_gdt:
     ;;  using a 64-bit GDT pointer
     jmp CODE_SEG_64:cleanup_32
 
-cleanup_32:
-
 bits 64
-    ;; Jump into the loaded virtual 64-bit address
 
+cleanup_32:
+    ;; Jump to the higher-half address:
     mov rax, 0xffffffff80000000
     add rax, cleanup_64
     jmp rax
@@ -186,6 +193,8 @@ cleanup_64:
     mov rax, kernel_main
     call rax
 
-    ; Loop forever if we ever get here:
-    jmp $
+    ; Loop forever if we ever return:
+fail2boot:
+    hlt
+    jmp fail2boot
 

@@ -25,13 +25,14 @@ section .text_early
 %define PF_DISABLE_CACHE (1 << 4)
 
 
+;; At entry, ebx contains the first address from which we can begin using pages.
 setup_paging:
 
     ;; First we must zero out the page data structures.
     ;; Count out how many:
 
     ; eax = size of kernel, rounded up to the next page
-    mov eax, kernel_size
+    mov eax, ebx            ; ebx is preloaded with the first address we can use after loading.
     add eax, PAGE_MASK
     and eax, -PAGE_SIZE
 
@@ -130,7 +131,7 @@ setup_paging:
     ;; PDPE  510
     ;; PDE   0
     ;; PTE   256
-    
+
     ;; physical mapping PML4E:
     mov eax, ebx        ; PML4E[0]
 
@@ -263,4 +264,3 @@ fixup_paging:
     mov cr3, rax
 
     ret
-
