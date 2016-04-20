@@ -1,3 +1,4 @@
 *.o
-*.kernel
-toy-os.elf
+kernel.elf
+*.a
+linker.ld

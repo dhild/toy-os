@@ -10,7 +10,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffreestanding -fbuiltin -mno-mmx -mno-s
 set(CMAKE_CXX_STANDARD_LIBRARIES "")
 set(CMAKE_C_STANDARD_LIBRARIES "")
 
-configure_file("include/kernel/config.h.in" "include/kernel/config.h")
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/include")
 
 add_subdirectory(${KERNEL_ARCH_DIR})

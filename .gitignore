@@ -6,3 +6,7 @@
 /.idea
 /sysroot
 /OVMF.fd
+/ovmf.zip
+/OVMF.fd
+.d/
+/kernel.iso

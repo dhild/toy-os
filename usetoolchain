@@ -1,0 +1,7 @@
+if [ -f customtoolchain ]; then
+    source customtoolchain
+else
+    PREFIX=$(pwd)/toolchain
+    echo "$PREFIX/bin"
+    export PATH=$PREFIX/bin:$PATH
+fi
