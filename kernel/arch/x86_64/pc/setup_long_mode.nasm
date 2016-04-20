@@ -5,7 +5,7 @@ extern setup_idt, setup_paging
 extern fixup_gdtr, fixup_idtr, fixup_paging
 extern kernel_start, kernel_end, kernel_physical_start, kernel_physical_end
 extern header_signature_addr, stack_physical_end
-extern kernel_main
+extern kernel_main, _init, _fini
 bits 32
 
 %define KERNEL_VIRTUAL_BASE 0xffffffff80000000
@@ -216,6 +216,9 @@ cleanup_64:
     ; virtual <=> physical mapping
     call fixup_paging
 
+    ; Setup for C++ by running the global constructors:
+    call _init
+
     ; Call the kernel's main entry
     xor rdi, rdi
     xor rsi, rsi
@@ -227,6 +230,9 @@ cleanup_64:
     add rax, KERNEL_VIRTUAL_BASE
     mov rax, kernel_main
     call rax
+
+    ; Teardown for C++ by running the global destructors:
+    call _fini
 
     ; Loop forever if we ever return:
 fail2boot:
