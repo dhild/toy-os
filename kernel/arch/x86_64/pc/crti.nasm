@@ -1,4 +1,11 @@
 bits 64
+section .text
+global __cxa_pure_virtual:function
+__cxa_pure_virtual:
+    ;; This is the function called if, somehow, a virtual call to a nonexistent function is made.
+    ;; This *should* be impossible without hacking the virtual call table.
+    jmp __cxa_pure_virtual
+
 section .init
 global _init:function
 _init:
