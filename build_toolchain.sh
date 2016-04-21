@@ -14,6 +14,9 @@ GCC=gcc-$GCC_VER
 GCC_BZ2=$GCC.tar.bz2
 GCC_URL=ftp://ftp.gnu.org/gnu/gcc/$GCC/$GCC_BZ2
 
+GDB=binutils-gdb
+GDB_URL=https://github.com/phil-opp/binutils-gdb.git
+
 #LLVM_VER=release_38
 #LLVM_TARGETS="X86;ARM;AArch64;Mips"
 
@@ -36,6 +39,9 @@ fi
 if [ ! -d "$GCC" ]; then
 	tar xvf $GCC_BZ2
 	(cd $GCC; contrib/download_prerequisites)
+fi
+if [ ! -d "$GDB" ]; then
+	git clone -b rust-os --depth 1 https://github.com/phil-opp/binutils-gdb.git
 fi
 
 #if [ ! -d llvm ]; then
@@ -115,6 +121,26 @@ if [ ! -f .install.succeeded ]; then
     touch .install.succeeded || exit 1
 else
     echo "$GCC .install.succeeded exists, NOT reinstalling!"
+fi
+
+
+cd $PREFIX/build
+mkdir -p build-gdb
+cd build-gdb
+if [ ! -f .config.succeeded ]; then
+    $PREFIX/sources/$GDB/configure --target=x86_64-pc-linux-gnu --program-suffix=-patched --prefix=$PREFIX \
+    --with-python=yes --enable-tui --with-curses --disable-nls --disable-werror \
+    --disable-gas --disable-binutils --disable-ld --disable-gprof && \
+    touch .config.succeeded || exit 1
+else
+    echo "$BINUTILS .config.succeeded exists, NOT reconfiguring!"
+fi
+if [ ! -f .install.succeeded ]; then
+    make -j4 && \
+    make install && \
+    touch .install.succeeded || exit 1
+else
+    echo "$BINUTILS .install.succeeded exists, NOT reinstalling!"
 fi
 
 #cd $PREFIX/build
