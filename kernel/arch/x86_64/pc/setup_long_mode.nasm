@@ -125,12 +125,16 @@ _start:
     mov gs, edx
 
     ;; Load ss:esp in one instruction (intel recommended method, prevents mid-load exceptions)
-    lss esp, DATA_SEG:stack_physical_end
+    lss esp, [stack_pointer]
     sub esp, 8
     mov ebp, esp
 
     ;; Reload the code segment
     jmp CODE_SEG_32:hosted_gdt
+
+stack_pointer:
+    dd stack_physical_end
+    dw DATA_SEG
 
 hosted_gdt:
 
