@@ -7,7 +7,7 @@ CXXFLAGS += -ffreestanding -fno-builtin -nostdlib -nostdinc -nostdinc++
 CFLAGS += -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow
 CXXFLAGS += -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow
 
-LDFLAGS = -melf_x86_64 -nostdlib -nodefaultlibs -z max-page-size=0x1000
+LDFLAGS = -melf_x86_64 -nostdlib -nodefaultlibs -z max-page-size=0x1000 --warn-common
 AR += --target elf64-x86-64
 
 
@@ -22,25 +22,22 @@ KERNEL_OBJS += arch/x86_64/pc/archlib.a
 KERNEL_OBJS += kernel/kernellib.a
 KERNEL_OBJS += $(CRTEND_OBJ) $(CRTN_OBJ)
 
-$(CRTI_OBJ):
-	$(MAKE) -C arch/x86_64/pc crti.o
-$(CRTN_OBJ):
-	$(MAKE) -C arch/x86_64/pc crtn.o
-
 all: kernel.elf
-.PHONY: all clean archlib kernellib
+.PHONY: all clean arch kernel
 
-arch/x86_64/pc/archlib.a:
-	$(MAKE) -C arch/x86_64/pc archlib.a
+arch:
+	$(MAKE) -C arch/x86_64/pc archlib.a crti.o crtn.o
 
-kernel/kernellib.a:
+kernel:
 	$(MAKE) -C kernel kernellib.a
 
 linker.ld: arch/x86_64/pc/linker.ld.S
 	$(CC) $(CFLAGS) arch/x86_64/pc/linker.ld.S -o linker.ld -E -P -D__ASSEMBLY__ -DLINKERSCRIPT
 
-kernel.elf: linker.ld $(KERNEL_OBJS)
+kernel.elf: linker.ld arch kernel
 	$(LD) $(LDFLAGS) -T linker.ld -o kernel.elf $(KERNEL_OBJS)
+	$(OBJCOPY) --only-keep-debug kernel.elf kernel.sym
+	$(OBJCOPY) --strip-debug kernel.elf kernel.bin
 
 clean:
 	$(MAKE) -C arch/x86_64/pc clean

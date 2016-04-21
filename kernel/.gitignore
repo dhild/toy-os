@@ -2,3 +2,5 @@
 kernel.elf
 *.a
 linker.ld
+kernel.sym
+kernel.bin

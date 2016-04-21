@@ -13,6 +13,7 @@ CXX = clang++
 LD = $(TOOLCHAIN_BIN)/$(TOOLCHAIN_PREFIX)ld
 AR = $(TOOLCHAIN_BIN)/$(TOOLCHAIN_PREFIX)ar
 RANLIB = $(TOOLCHAIN_BIN)/$(TOOLCHAIN_PREFIX)ranlib
+OBJCOPY = $(TOOLCHAIN_BIN)/$(TOOLCHAIN_PREFIX)objcopy
 NASM = nasm -f elf64
 
 CFLAGS = -Wall -Wextra -Werror -g
@@ -35,7 +36,7 @@ kernel:
 
 clean:
 	$(MAKE) -C kernel clean
-	rm -f kernel.iso OVMF.fd ovmf.zip
+	rm -f kernel.iso
 
 $(shell mkdir -p $(DEPDIR) >/dev/null)
 %.o : %.c
@@ -57,11 +58,11 @@ $(DEPDIR)/%.d: ;
 -include $(patsubst %,$(DEPDIR)/%.d,$(basename $(SRCS)))
 
 
-kernel.iso: kernel kernel/kernel.elf grub.cfg
+kernel.iso: kernel grub.cfg
 	rm -fr /tmp/toyos-isodir
 	mkdir -p /tmp/toyos-isodir/boot/grub
 	cp grub.cfg /tmp/toyos-isodir/boot/grub/grub.cfg
-	cp kernel/kernel.elf /tmp/toyos-isodir/boot/kernel.elf
+	cp kernel/kernel.bin /tmp/toyos-isodir/boot/kernel.bin
 	grub-mkrescue -o kernel.iso /tmp/toyos-isodir
 
 OVMF.fd:

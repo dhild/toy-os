@@ -8,11 +8,11 @@ set architecture i386
 
 target remote localhost:1234
 
-symbol-file build/kernel/kernel.elf
-file build/kernel/kernel.elf
+symbol-file kernel/kernel.sym
+file kernel/kernel.bin
 
 break *0x0000000000101000
 #break *0x000000000010107c
 #break kernel_main
 
-continue
+#continue
