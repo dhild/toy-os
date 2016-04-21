@@ -2,7 +2,7 @@
 
 /* The bootloader will look at this image and start execution at the symbol
    designated at the entry point. */
-ENTRY(_start)
+ENTRY(kernel_entry)
 
 /* Tell where the various sections of the object files will be put in the final
    kernel image. */
@@ -25,16 +25,18 @@ SECTIONS
 	}
         
 	/* Higher-half kernel */
-	. += KERNEL_VIRTUAL_BASE;
+	. += KERNEL_VIRTUAL_OFFSET;
 
 	/* Next we'll put the .text section. */
-	.text BLOCK(4K) : AT(ADDR(.text) - KERNEL_VIRTUAL_BASE)
+	.text BLOCK(4K) : AT(ADDR(.text) - KERNEL_VIRTUAL_OFFSET)
 	{
+        *(.init)
+        *(.fini)
 		*(.text)
 	}
 
 	/* Read-only data. */
-	.rodata BLOCK(4K) : AT(ADDR(.rodata) - KERNEL_VIRTUAL_BASE)
+	.rodata BLOCK(4K) : AT(ADDR(.rodata) - KERNEL_VIRTUAL_OFFSET)
 	{
 		*(SORT(.ctor*))
 		*(SORT(.dtor*))
@@ -45,14 +47,16 @@ SECTIONS
 	}
 
 	/* Read-write data (initialized) */
-	.data BLOCK(4K) : AT(ADDR(.data) - KERNEL_VIRTUAL_BASE)
+	.data BLOCK(4K) : AT(ADDR(.data) - KERNEL_VIRTUAL_OFFSET)
 	{
 		*(.data)
 		*(.gnu.linkonce.d*)
 	}
 
+	kernel_bss_start = . - KERNEL_VIRTUAL_OFFSET ;
+
 	/* Read-write data (uninitialized) */
-	.bss BLOCK(4K) : AT(ADDR(.bss) - KERNEL_VIRTUAL_BASE)
+	.bss BLOCK(4K) : AT(ADDR(.bss) - KERNEL_VIRTUAL_OFFSET)
 	{
 		*(COMMON)
 		*(.bss)
@@ -65,6 +69,6 @@ SECTIONS
 	}
 
     kernel_end = .          ;
-    kernel_size = kernel_end - KERNEL_VIRTUAL_BASE ;
-    kernel_physical_end = . - KERNEL_VIRTUAL_BASE + kernel_physical_start ;
+    kernel_physical_end = . - KERNEL_VIRTUAL_OFFSET;
+    kernel_size = kernel_end - kernel_start ;
 }

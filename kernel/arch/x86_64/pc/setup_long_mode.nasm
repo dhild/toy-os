@@ -1,11 +1,10 @@
-global _start:function  	; making entry point visible to linker
-global cleanup_32:function
+global kernel_entry:function  	; making entry point visible to linker
 extern GDTR, GDT, CODE_SEG_32, DATA_SEG, CODE_SEG_64
 extern setup_idt, setup_paging
 extern fixup_gdtr, fixup_idtr, fixup_paging
 extern kernel_start, kernel_end, kernel_physical_start, kernel_physical_end
-extern header_signature_addr, stack_physical_end
-extern kernel_main, _init, _fini
+extern header_signature_addr, stack_physical_end, kernel_bss_start
+extern kernel_main, run_global_constructors, run_global_destructors
 bits 32
 
 %define KERNEL_VIRTUAL_BASE 0xffffffff80000000
@@ -28,7 +27,7 @@ MultibootHeader:
     dd kernel_physical_start
     dd kernel_physical_end
     dd 0
-    dd _start
+    dd kernel_entry
     dd 0        ; Graphics mode
     dd 1024     ; width
     dd 768      ; height
@@ -111,7 +110,7 @@ Multiboot2SaveRegs:
 
 section .text_early
 
-_start:
+kernel_entry:
     ;; Keep interrupts disabled until we are set to handle them.
     cli
 
@@ -222,7 +221,8 @@ cleanup_64:
     call fixup_paging
 
     ; Setup for C++ by running the global constructors:
-    call _init
+    mov rax, run_global_constructors
+    call rax
 
     ; Call the kernel's main entry
     xor rdi, rdi
@@ -237,7 +237,8 @@ cleanup_64:
     call rax
 
     ; Teardown for C++ by running the global destructors:
-    call _fini
+    mov rax, run_global_destructors
+    call rax
 
     ; Loop forever if we ever return:
 fail2boot:

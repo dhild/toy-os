@@ -7,15 +7,15 @@ __cxa_pure_virtual:
     jmp __cxa_pure_virtual
 
 section .init
-global _init:function
-_init:
+global run_global_constructors:function
+run_global_constructors:
 	push rbp
-	mov rsp, rbp
+	mov rbp, rsp
 	;; gcc will nicely put the contents of crtbegin.o's .init section here.
 
 section .fini
-global _fini:function
-_fini:
+global run_global_destructors:function
+run_global_destructors:
 	push rbp
-	mov rsp, rbp
+	mov rbp, rsp
 	;; gcc will nicely put the contents of crtbegin.o's .fini section here.
