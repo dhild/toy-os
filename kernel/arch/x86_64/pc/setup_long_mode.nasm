@@ -117,14 +117,15 @@ _start:
 
     lgdt [GDTR]
 
+    ; Clear potentially stale segment registers:
     mov edx, DATA_SEG
     mov ds, edx
     mov es, edx
     mov fs, edx
     mov gs, edx
-    mov ss, edx
 
-    mov esp, stack_physical_end
+    ;; Load ss:esp in one instruction (intel recommended method, prevents mid-load exceptions)
+    lss esp, DATA_SEG:stack_physical_end
     sub esp, 8
     mov ebp, esp
 
