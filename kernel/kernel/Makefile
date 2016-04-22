@@ -5,10 +5,10 @@ default_target: all
 CFLAGS += -I ../include
 CXXFLAGS += -I ../include
 
-SRCS = early_video.cpp
+SRCS = abi.cpp
 SRCS += main.cpp
 SRCS += multiboot_utils.cpp
-OBJS = early_video.o
+OBJS = abi.o
 OBJS += main.o
 OBJS += multiboot_utils.o
 

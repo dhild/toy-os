@@ -1,7 +1,7 @@
 #ifndef TOY_OS_KERNEL_MAIN_H
 #define TOY_OS_KERNEL_MAIN_H
 
-#include <kernel/config.h>
+#include <kernel/config.hpp>
 
 extern "C" {
 
