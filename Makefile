@@ -70,4 +70,4 @@ OVMF.fd:
 	unzip ovmf.zip OVMF.fd
 
 qemu: kernel.iso OVMF.fd
-	qemu-system-x86_64 -s -bios OVMF.fd -m 2048 -cdrom kernel.iso
+	qemu-system-x86_64 -d int -s -bios OVMF.fd -m 2048 -cdrom kernel.iso
