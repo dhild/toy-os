@@ -4,7 +4,7 @@ global fixup_idtr:function
 bits 32
 section .text_early
 
-%define KERNEL_VIRTUAL_BASE 0xFFFFFFFF80000000
+%define KERNEL_VIRTUAL_BASE 0xffffffff80000000
 
 ;; The IDT holds a set of descriptors, known as Interrupt, Call, and Trap gates.
 
@@ -100,7 +100,7 @@ idt_init_one:
 bits 64
 fixup_idtr:
     mov rax, IDT
-    add rax, 0xffffffff80000000
+    add rax, KERNEL_VIRTUAL_BASE
 
     mov qword [IDTR + 2], rax
 

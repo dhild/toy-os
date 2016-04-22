@@ -5,9 +5,8 @@ default_target: all
 crti.o: crti.nasm
 crtn.o: crtn.nasm
 
-OBJS = setup_gdt.o
+OBJS = setup_long_mode.o
 OBJS += setup_idt.o
-OBJS += setup_long_mode.o
 OBJS += setup_paging.o
 
 all: archlib.a crti.o crtn.o
