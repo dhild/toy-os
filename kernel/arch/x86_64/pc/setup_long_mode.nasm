@@ -161,34 +161,29 @@ hosted_gdt:
 setupLongMode:
     ;; Set up for 64-bit mode
 
-    ; 1. Setup an IDT (preserve ebx for paging routine)
-    push ebx
-    call setup_idt
-    pop ebx
-
-    ; 2. Disable paging, bit 31 of cr0
+    ; 1. Disable paging, bit 31 of cr0
     mov eax, cr0
     and eax, 0x7FFFFFFF
     mov cr0, eax
 
-    ; 3. Initialize paging tables. First safe address is in ebx at call, PML4 address is in ebx after return
+    ; 2. Initialize paging tables. First safe address is in ebx at call, PML4 address is in ebx after return
     call setup_paging
 
-    ; 4. Load cr3 with the physical address of the page table
+    ; 3. Load cr3 with the physical address of the page table
     mov cr3, ebx
 
-    ; 5. Enable PAE, 6th bit of cr4
+    ; 4. Enable PAE, 6th bit of cr4
     mov eax, cr4
     or eax, 0010_0000b
     mov cr4, eax
 
-    ; 6. Enable IA-32e mode by setting IA32_EFER.LME = 1.
+    ; 5. Enable IA-32e mode by setting IA32_EFER.LME = 1.
     mov ecx, 0xC0000080
     rdmsr
     or eax, (1 << 8)
     wrmsr
 
-    ; 7. Enable paging, bit 31 of cr0
+    ; 6. Enable paging, bit 31 of cr0
     mov eax, cr0
     or eax, (1 << 31)
     mov cr0, eax
@@ -199,6 +194,7 @@ setupLongMode:
 
 bits 64
 
+global cleanup_32:function ;; For debugging
 cleanup_32:
     ;; Jump to the higher-half address:
     mov rax, KERNEL_VIRTUAL_BASE
@@ -212,9 +208,12 @@ cleanup_64:
     mov rsp, rax
     mov rbp, rax
 
-    ; Move GDTR / IDTR addresses to their virtual ones
+    ; Move GDTR addresses to their virtual ones
     call fixup_gdtr
-    call fixup_idtr
+
+    ; Create and load the IDT
+    mov rax, setup_idt
+    call rax
 
     ; After that, fix the paging entries by removing the
     ; virtual <=> physical mapping
@@ -222,6 +221,9 @@ cleanup_64:
 
     ; Initialize the multiboot info:
     call initialize_mb2
+
+    ; Finally, enable interrupts:
+    sti
 
     ; Setup for C++ by running the global constructors:
     mov rax, run_global_constructors
@@ -260,7 +262,6 @@ initialize_mb2:
 
 
 bits 32
-section .text_early
 
 ;; This code sets up the GDT that we will use.
 ;;

@@ -5,4 +5,4 @@ add_library(mainkernel
         main.cpp ../include/kernel/main.h
         early_video.cpp ../include/kernel/early_video.h
         multiboot_utils.cpp ../include/kernel/multiboot_utils.h
-        )
+        ../include/kernel/paging.hpp paging.cpp abi.cpp ../include/kernel/abi.hpp interrupts.cpp ../include/kernel/interrupts.hpp)

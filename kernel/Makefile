@@ -2,8 +2,8 @@
 default_target: all
 .PHONY : default_target
 
-CFLAGS += -ffreestanding -fno-builtin -nostdlib -nostdinc
-CXXFLAGS += -ffreestanding -fno-builtin -nostdlib -nostdinc -nostdinc++
+CFLAGS += -ffreestanding -fno-builtin -nostdlib -nostdinc -mno-red-zone
+CXXFLAGS += -ffreestanding -fno-builtin -nostdlib -nostdinc -mno-red-zone -nostdinc++
 CFLAGS += -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow
 CXXFLAGS += -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow
 

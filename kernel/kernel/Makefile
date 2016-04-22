@@ -8,9 +8,11 @@ CXXFLAGS += -I ../include
 SRCS = abi.cpp
 SRCS += main.cpp
 SRCS += multiboot_utils.cpp
+SRCS += paging.cpp
 OBJS = abi.o
 OBJS += main.o
 OBJS += multiboot_utils.o
+OBJS += paging.o
 
 all: kernellib.a
 .PHONY: all clean

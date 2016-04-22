@@ -1,37 +1,19 @@
 extern CODE_SEG_64
 global setup_idt:function
-global fixup_idtr:function
-bits 32
-section .text_early
+extern handle_page_fault
+bits 64
 
 %define KERNEL_VIRTUAL_BASE 0xffffffff80000000
 
-;; The IDT holds a set of descriptors, known as Interrupt, Call, and Trap gates.
+%define FLAG_INTERRUPT  0xe00
+%define FLAG_TRAP       0xf00
 
-%define FLAG_INTERRUPT  0xe
-    
-%define FLAG_DPL0    0
-%define FLAG_PRESENT (1 << 7)
+%define FLAG_DPL0       0
+%define FLAG_PRESENT    0x8000
 
 %define IDT_ENTRIES     256
 
-
-;; 1 = ISR number
-%macro ISR 1
-isr%1:
-    mov dx, %1
-    jmp isr%1
-%endmacro
-
-ISRS:
-%assign i 0
-%rep IDT_ENTRIES
-ISR i
-%assign i (i+1)
-%endrep
-
-%define ISR_SIZE (isr1-isr0)
-
+section .data
 
 align 8
 IDTR:
@@ -43,68 +25,136 @@ align 8
 IDT:
 %assign i 0
 %rep IDT_ENTRIES
-    dd 0xdeadc0de
-    dd 0xdeadc0de
-    dd 0xdeadc0de
-    dd 0xdeadc0de
+    dd 0
+    dd 0
+    dd 0
+    dd 0
 %assign i i+1
 %endrep
 IDTEND:
 
+section .text
+
+ignored_interrupt:
+    ; TODO: Add diagnostics for the ignored interrupt
+    iret
+
+ignored_interrupt_with_ec:
+    ; TODO: Add diagnostics for the ignored interrupt
+    add rsp, 8 ;; "pop" error code
+    iret
+
+global page_fault_interrupt:function
+page_fault_interrupt:
+    cli
+    push rdi
+    mov rdi, qword [rsp+8] ;; Error code
+    push rax
+    push rbx
+    push rcx
+    push rdx
+    push rsi
+    push rbp
+    push r8
+    push r9
+    push r10
+    push r11
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov rsi, cr2
+    mov rax, handle_page_fault
+    call rax
+
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop r11
+    pop r10
+    pop r9
+    pop r8
+    pop rbp
+    pop rsi
+    pop rdx
+    pop rcx
+    pop rbx
+    pop rax
+    pop rdi
+
+    add rsp, 8 ;; "pop" error code
+    iret
+
+
 
 setup_idt:
-    ;; The virtual addresses are loaded & used
-    ;; Interrupts are left disabled until the jump to long mode
-    mov eax, IDT
-    mov ebx, isr0
-    or ebx, (KERNEL_VIRTUAL_BASE & 0xffffffff)
+    ;; rax - dword @b0 of IDT entry
+    ;; rbx - dword @b4 of IDT entry
+    ;; rdx - dword @b8 of IDT entry
+    mov rbx, ignored_interrupt
+    xor rax, rax
+    mov ax, bx
 
-idt_init_one:
-    ;; Target Low (word)
-    mov ecx, ebx
-    mov word [eax], cx
-    add eax, 2
+    mov rbx, CODE_SEG_64
+    shl rbx, 16
+    or rax, rbx
 
-    ;; Code Selector (word)
-    mov word[eax], CODE_SEG_64
-    add eax, 2
+    mov rcx, ignored_interrupt
+    shr rcx, 16
+    xor rbx, rbx
+    mov bx, cx
+    shl rbx, 32
+    or rbx, (FLAG_INTERRUPT | FLAG_PRESENT | FLAG_DPL0)
 
-    ;; IST (byte)
-    mov byte[eax], 0
-    add eax, 1
+    mov rcx, ignored_interrupt
+    shr rcx, 32
+    xor rdx, rdx
+    mov edx, ecx
 
-    ;; Flags (byte)
-    mov byte[eax], (FLAG_PRESENT|FLAG_DPL0|FLAG_INTERRUPT)
-    add eax, 1
+    mov rdi, IDT
+    mov rcx, IDT_ENTRIES
 
-    ;; Target High (word)
-    shr ecx, 16
-    mov word[eax], cx
-    add eax, 2
+.initialize:
+    mov dword [rdi+0], eax
+    mov dword [rdi+4], ebx
+    mov dword [rdi+8], edx
+    add rdi, 16
+    dec rcx
+    jne .initialize
 
-    ;; Long Mode Target High 32
-    mov dword[eax], (KERNEL_VIRTUAL_BASE >> 32)
-    add eax, 4
+    ;; Now, load specialty interrupts, using a special macro:
 
-    mov dword[eax], 0
-    add eax, 4
+;; 1 = ISR number
+;; 2 = ISR address
+%macro set_interrupt 2
+    mov rdi, IDT
+    add rdi, (16 * %1)
+    mov rax, %2
+    and rax, 0xffff
+    mov word [rdi], ax
 
-    add ebx, ISR_SIZE
+    mov rax, %2
+    shr rax, 16
+    and rax, 0xffff
+    mov word [rdi+6], ax
 
-    cmp eax, IDTEND
-    jl idt_init_one
+    mov rax, %2
+    shr rax, 32
+    mov dword [rdi+8], eax
+%endmacro
 
-    lidt[IDTR]
+    set_interrupt 10, ignored_interrupt_with_ec
+    set_interrupt 11, ignored_interrupt_with_ec
+    set_interrupt 12, ignored_interrupt_with_ec
+    set_interrupt 13, ignored_interrupt_with_ec
+    set_interrupt 17, ignored_interrupt_with_ec
+    set_interrupt 30, ignored_interrupt_with_ec
+
+    set_interrupt 14, page_fault_interrupt
+
+    mov rax, IDTR
+    lidt [rax]
+
     ret
-
-bits 64
-fixup_idtr:
-    mov rax, IDT
-    add rax, KERNEL_VIRTUAL_BASE
-
-    mov qword [IDTR + 2], rax
-
-    lidt[IDTR]
-
-    ret
-
