@@ -220,19 +220,14 @@ cleanup_64:
     ; virtual <=> physical mapping
     call fixup_paging
 
+    ; Initialize the multiboot info:
+    call initialize_mb2
+
     ; Setup for C++ by running the global constructors:
     mov rax, run_global_constructors
     call rax
 
     ; Call the kernel's main entry
-    xor rdi, rdi
-    xor rsi, rsi
-    mov rax, KERNEL_VIRTUAL_BASE
-    add rax, Multiboot2SaveRegs.eax
-    mov edi, dword [rax]
-    add rax, 4
-    mov esi, dword [rax]
-    add rax, KERNEL_VIRTUAL_BASE
     mov rax, kernel_main
     call rax
 
@@ -244,4 +239,22 @@ cleanup_64:
 fail2boot:
     hlt
     jmp fail2boot
+
+
+extern mb2_info_first_tag, mb2_info_max_size
+initialize_mb2:
+    mov rsi, Multiboot2SaveRegs.ebx
+    add rsi, KERNEL_VIRTUAL_BASE
+    mov eax, dword [rsi]
+    add rax, KERNEL_VIRTUAL_BASE
+
+    mov ebx, dword [rax]  ; size of multiboot info
+
+    add rax, 8
+    mov rdi, mb2_info_first_tag
+    mov dword [rdi], eax
+    mov rdi, mb2_info_max_size
+    mov dword [rdi], ebx
+
+    ret
 

@@ -5,7 +5,7 @@
 
 extern "C" {
 
-void kernel_main(const uint32_t magic, const void *mb_info);
+void kernel_main();
 
 }
 
