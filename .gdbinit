@@ -21,4 +21,6 @@ set architecture i386:x86-64:intel
 #break setup_idt
 break kernel_main
 
+break handle_page_fault
+
 #continue

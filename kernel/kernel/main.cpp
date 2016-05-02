@@ -1,4 +1,4 @@
-#include <kernel/main.h>
+#include <kernel/main.hpp>
 
 void kernel_main() {
 

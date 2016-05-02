@@ -1,4 +1,4 @@
-#include "kernel/multiboot_utils.h"
+#include "kernel/multiboot_utils.hpp"
 
 #define MULTIBOOT_TAG_ALIGN_MASK (MULTIBOOT_TAG_ALIGN - 1)
 
